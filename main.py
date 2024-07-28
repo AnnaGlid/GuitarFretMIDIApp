@@ -16,10 +16,14 @@ class App:
     def __init__(self):
         #region create widgets
         self.root = tk.Tk()
-        self.root.geometry('{}x{}+0+0'.format(*self.root.maxsize()))
-        self.root_frame = tk.Frame(self.root)
-        self.guitar = Guitar(self.root_frame)
-        self.piano = Piano(self.root_frame)
+        self.root.title("See MIDI")
+        self.root.geometry('{}x{}'.format(*self.root.maxsize()))
+        self.root_frame = tk.Frame(self.root, pady=30, padx=40)
+        columns_number = 4
+        self.root.columnconfigure(index=0, weight=1)
+        # [self.root_frame.columnconfigure(index=idx, weight=1) for idx in range(0, columns_number)]
+        self.guitar = Guitar(self.root_frame, self.root.maxsize()[0])
+        self.piano = Piano(self.root_frame, self.root.winfo_width())
         self.check_state_show_guitar = tk.IntVar()
         self.check_show_guitar = tk.Checkbutton(self.root_frame, text=strings['show_guitar'], 
                                                 variable=self.check_state_show_guitar)
@@ -45,25 +49,28 @@ class App:
         #endregion
 
         #region pack widgets
-        self.root_frame.grid()
+        self.root_frame.grid(sticky='nsew', row=0, column=0)
         row = 0
         self.check_show_guitar.grid(row=row, column=0)
         row += 1
-        self.guitar.canvas.grid(row=row, column=0)
+        self.guitar.canvas.grid(row=row, columnspan=4, sticky='ns')
         row += 1
         self.check_show_piano.grid(row=row, column=0)
         row += 1
-        self.piano.canvas.grid(row=row, column=0)
+        self.piano.canvas.grid(row=row, column=0, columnspan=4)
         row += 1 
-        self.btn_record.grid(row=row, column=0)
-        self.btn_pause.grid(row=row, column=1)
-        self.btn_stop.grid(row=row, column=2)
+        self.btn_record.grid(row=row, column=1, padx=5)
+        self.btn_pause.grid(row=row, column=2, padx=5)
+        self.btn_stop.grid(row=row, column=3, padx=5)
+        row += 1
+        sep = tk.Label(self.root_frame, text="", pady=10)
+        sep.grid(row=row, column=0)
         row += 1
         label_fret_range.grid(row=row, column=0)
         row += 1
         label_from.grid(row=row, column=0)
         self.input_fret_from.grid(row=row, column=1)
-        label_to.grid(row=row, column = 2)
+        label_to.grid(row=row, column=2)
         self.input_fret_to.grid(row=row, column=3)
         row += 1
         label_scale.grid(row=row, column=0)
@@ -72,8 +79,6 @@ class App:
         self.input_scale_root.grid(row=row, column=1)
         label_scale_type.grid(row=row, column=2)
         self.input_scale_type.grid(row=row, column=3)
-
-
         #endregion
         
         self.root.mainloop()

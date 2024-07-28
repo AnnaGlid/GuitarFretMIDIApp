@@ -13,5 +13,9 @@
         "chromatic",
         "arabic",
         "pentatonic"
-    ]
+    ],
+    "guitar_neck_color" : "#C0994B",
+    "guitar_dots_color": "#FFF0C9",
+    "guitar_frets_color": "#EFD99D",
+    "guitar_strings_color": "#373737"
 }
