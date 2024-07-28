@@ -1,0 +1,17 @@
+{
+    "eng":{
+        "show_guitar": "Show guitar?",
+        "show_piano": "Show piano?",
+        "fret_range": "Choose fret range",
+        "from": "from",
+        "to": "to",
+        "scale": "Choose scale",
+        "scale_root": "root",
+        "type": "type",
+        "start_recording": "Start recording",
+        "pause_recording": "Pause recording",
+        "stop_recording": "Stop recording",
+        "guitar": "Guitar",
+        "piano": "Piano"
+    }
+}

@@ -1,80 +1,82 @@
-import time
-import rtmidi
-from mido import MidiFile
+from json import load
 import tkinter as tk
+from tkinter import ttk
+from instruments import Guitar, Piano
 
-CANVAS_HEIGHT = 500
-CANVAS_WIDTH = 800
-MARGIN_X = 60
-MARGIN_Y = 40
-
-window = tk.Tk()
-window_max_x = window.wm_maxsize()[0]
-window_max_y = window.wm_maxsize()[1]
-
-FRET_LENGTH = window_max_x - window_max_x // 10     # x axis
-FRET_WIDTH = FRET_LENGTH // 12
-FRET_DISTANCE = FRET_LENGTH / 24
-ONE_DOT_FRETS = [3, 5, 7, 9, 15, 17, 19, 21]
-TWO_DOT_FRETS = [12, 24]
-FRETS_COORDS = {}
-DOT_SIZE = FRET_DISTANCE / 7
-
-canvas = tk.Canvas(window, width=window_max_x, height=window_max_y)
-canvas.create_rectangle(MARGIN_X, MARGIN_Y, MARGIN_X+FRET_LENGTH, MARGIN_Y+FRET_WIDTH,  outline="#C0994B", fill="#C0994B")
-for i in range(0, 25):
-    FRETS_COORDS[i] = {
-        'x0': MARGIN_X + FRET_DISTANCE * i,
-        'y0': MARGIN_Y,
-        'x1': MARGIN_X + FRET_DISTANCE * i,
-        'y1': MARGIN_Y + FRET_WIDTH
-    }
-    canvas.create_line(*FRETS_COORDS[i].values())
-
-for fret in range(1, 25):
-    middle_point = (
-        (FRETS_COORDS[fret]['x0'] + FRETS_COORDS[fret-1]['x0']) / 2,
-        (FRETS_COORDS[fret]['y0'] + FRETS_COORDS[fret]['y1']) /2
-    )    
-    if fret in ONE_DOT_FRETS:
-        canvas.create_oval(
-                middle_point[0] - DOT_SIZE,
-                middle_point[1] + DOT_SIZE,
-                middle_point[0] + DOT_SIZE,
-                middle_point[1] - DOT_SIZE,
-                outline="#FFF0C9", fill="#FFF0C9"
-        )
-    elif fret in TWO_DOT_FRETS:
-        canvas.create_oval(
-                middle_point[0] - DOT_SIZE,
-                FRETS_COORDS[fret]['y0'] + DOT_SIZE,
-                middle_point[0] + DOT_SIZE,
-                FRETS_COORDS[fret]['y0'] + DOT_SIZE*2 + DOT_SIZE,
-                outline="#FFF0C9", fill="#FFF0C9"
-        )           
-        canvas.create_oval(
-                middle_point[0] - DOT_SIZE,
-                FRETS_COORDS[fret]['y1'] - DOT_SIZE*2 - DOT_SIZE,
-                middle_point[0] + DOT_SIZE,
-                FRETS_COORDS[fret]['y1'] - DOT_SIZE,
-                outline="#FFF0C9", fill="#FFF0C9"
-        )
-     
+with open('config/settings.json') as f:
+    settings = load(f)
+with open('config/strings.json') as f:
+    strings = load(f)[settings['language']]
+with open('config/constants.json') as f:
+    constants = load(f)
 
 
-canvas.pack()
+class App:
 
-# ultimate way to do it - through the MIDI port, live stream
-midi_in = rtmidi.MidiIn()
+    def __init__(self):
+        #region create widgets
+        self.root = tk.Tk()
+        self.root.geometry('{}x{}+0+0'.format(*self.root.maxsize()))
+        self.root_frame = tk.Frame(self.root)
+        self.guitar = Guitar(self.root_frame)
+        self.piano = Piano(self.root_frame)
+        self.check_state_show_guitar = tk.IntVar()
+        self.check_show_guitar = tk.Checkbutton(self.root_frame, text=strings['show_guitar'], 
+                                                variable=self.check_state_show_guitar)
+        self.check_state_show_piano = tk.IntVar()
+        self.check_show_piano = tk.Checkbutton(self.root_frame, text=strings['show_piano'], variable=self.check_state_show_piano)
+        label_fret_range = tk.Label(self.root_frame, text=strings['fret_range'])
+        label_from = tk.Label(self.root_frame, text=strings['from'])
+        self.input_fret_from = ttk.Combobox(self.root_frame, width=5, state='readonly',
+                                                values=list(range(1,constants['frets_number']+1)))
+        label_to = tk.Label(self.root_frame, text=strings['to'])
+        self.input_fret_to = ttk.Combobox(self.root_frame, width=5, state='readonly',
+                                                values=list(range(1,constants['frets_number']+1)))
+        label_scale = tk.Label(self.root_frame, text=strings['scale'])
+        label_scale_root = tk.Label(self.root_frame, text=strings['scale_root'])
+        self.input_scale_root = ttk.Combobox(self.root_frame, width=5, state='readonly',
+                                             values=constants['all_notes'])
+        label_scale_type = tk.Label(self.root_frame, text=strings['type'])
+        self.input_scale_type = ttk.Combobox(self.root_frame, width=5, state='readonly',
+                                             values=constants['scale_types'])
+        self.btn_record = tk.Button(self.root_frame, text=strings['start_recording'])
+        self.btn_pause = tk.Button(self.root_frame, text=strings['pause_recording'])
+        self.btn_stop = tk.Button(self.root_frame, text=strings['stop_recording'])
+        #endregion
 
-# in the meantime when I don't have access to real MIDI control device, I will work with a midi file
-midi_file = MidiFile('mojeserce.mid', clip=True)
-track = midi_file.tracks[0]
+        #region pack widgets
+        self.root_frame.grid()
+        row = 0
+        self.check_show_guitar.grid(row=row, column=0)
+        row += 1
+        self.guitar.canvas.grid(row=row, column=0)
+        row += 1
+        self.check_show_piano.grid(row=row, column=0)
+        row += 1
+        self.piano.canvas.grid(row=row, column=0)
+        row += 1 
+        self.btn_record.grid(row=row, column=0)
+        self.btn_pause.grid(row=row, column=1)
+        self.btn_stop.grid(row=row, column=2)
+        row += 1
+        label_fret_range.grid(row=row, column=0)
+        row += 1
+        label_from.grid(row=row, column=0)
+        self.input_fret_from.grid(row=row, column=1)
+        label_to.grid(row=row, column = 2)
+        self.input_fret_to.grid(row=row, column=3)
+        row += 1
+        label_scale.grid(row=row, column=0)
+        row += 1
+        label_scale_root.grid(row=row, column=0)
+        self.input_scale_root.grid(row=row, column=1)
+        label_scale_type.grid(row=row, column=2)
+        self.input_scale_type.grid(row=row, column=3)
 
-window.mainloop()
-for msg in track:
-    # print(msg)
-    if msg.type == 'note_on' and msg.velocity > 0:
-        print(msg.note, end=' ')
-    time.sleep(msg.time / 1000)
-d=1
+
+        #endregion
+        
+        self.root.mainloop()
+
+
+app = App()
