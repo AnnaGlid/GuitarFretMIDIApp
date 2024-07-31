@@ -12,6 +12,12 @@
         "pause_recording": "Pause recording",
         "stop_recording": "Stop recording",
         "guitar": "Guitar",
-        "piano": "Piano"
+        "piano": "Piano",
+        "major_scale": "Major scale",
+        "major_pentatonic": "Major pentatonic",
+        "major_triad": "Major triad",
+        "minor_scale": "Minor scale",
+        "minor_pentatonic":"Minor pentatonic",
+        "minor_triad": "Minor triad"
     }
 }

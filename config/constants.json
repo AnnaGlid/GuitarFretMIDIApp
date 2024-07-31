@@ -1,5 +1,16 @@
 {
+    "guitar_neck_color" : "#C0994B",
+    "guitar_dots_color": "#FFF0C9",
+    "guitar_frets_color": "#EFD99D",
+    "guitar_strings_color": "#373737",    
     "frets_number": 24,
+    "frets_labeled": [3,5,7,9,12,15,17,19,21],
+    "all_notes_grouped":[
+        ["C", "B#"], ["C#", "Db"], ["D"],
+        ["D#", "Eb"], ["E", "Fb"], ["E#", "F"],
+        ["F#, Gb"], ["G"], ["G#, Ab"],
+        ["A"], ["A#, Bb"], ["B", "Cb"]
+    ],
     "all_notes":[
         "C", "C#", "Cb",
         "D", "D#", "Db",
@@ -9,13 +20,51 @@
         "A", "A#", "Ab",
         "B", "B#", "Bb"
     ],
-    "scale_types": [
-        "chromatic",
-        "arabic",
-        "pentatonic"
-    ],
-    "guitar_neck_color" : "#C0994B",
-    "guitar_dots_color": "#FFF0C9",
-    "guitar_frets_color": "#EFD99D",
-    "guitar_strings_color": "#373737"
+    "all_intervals":{
+        "R": "R",
+        "b2": "♭2",
+        "d2": "Δ2",
+        "b3": "♭3",
+        "d3": "Δ3",
+        "p4": "p4", 
+        "b5": "♭5", 
+        "p5": "p5",
+        "b6": "♭6", 
+        "d6": "Δ6",
+        "b7": "♭7",
+        "d7": "Δ7"
+    },
+    "scale_types":{
+        "major_scale":{
+            "intervals":[
+                "R", "d2", "d3", "p4", "p5", "d6", "d7"
+            ]
+        },
+        "major_pentatonic":{
+            "intervals":[
+                "R", "d2", "d3", "p5", "d6"
+            ]
+        },
+        "major_triad":{
+            "intervals":[
+                "R", "d3", "p5"
+            ]
+        },
+        "minor_scale":{
+            "intervals":[
+                "R", "d2", "b3", "p4", "p5", "b6", "b7"
+            ]
+        },
+        "minor_pentatonic":{
+            "intervals":[
+                "R", "b3", "p4", "p5", "b7"
+            ]
+        },
+        "minor_triad":{
+            "intervals":[
+                "R", "b3", "p5"
+            ]
+        }
+    },
+    "guitar_strings":["E","B","G","D","A","E"]
 }
