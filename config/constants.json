@@ -35,6 +35,11 @@
         "d7": "Δ7"
     },
     "scale_types":{
+        "none":{
+            "intervals": [
+                "R","b2","d2","b3","d3","p4","b5","p5","b6","d6","b7","d7"
+            ]
+        },
         "major_scale":{
             "intervals":[
                 "R", "d2", "d3", "p4", "p5", "d6", "d7"
@@ -66,5 +71,31 @@
             ]
         }
     },
-    "guitar_strings":["E","B","G","D","A","E"]
+    "guitar_strings": {
+        "EE": {
+            "frets": [],
+            "number": 1
+        },
+        "B": {
+            "frets": [],
+            "number": 2
+        },
+        "G": {
+            "frets": [],
+            "number": 3
+        },
+        "D": {
+            "frets": [],
+            "number": 4
+        },
+        "A": {
+            "frets": [],
+            "number": 5
+        },
+        "E": {
+            "frets": [],
+            "number": 6
+        }
+    }
+    
 }

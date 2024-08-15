@@ -22,6 +22,7 @@ class App:
         columns_number = 4
         self.root.columnconfigure(index=0, weight=1)
         # [self.root_frame.columnconfigure(index=idx, weight=1) for idx in range(0, columns_number)]
+     
         self.check_state_show_guitar = tk.IntVar(value=1)
         self.check_show_guitar = tk.Checkbutton(self.root_frame, text=strings['show_guitar'], 
                                                 variable=self.check_state_show_guitar)
@@ -49,9 +50,10 @@ class App:
         self.btn_record = tk.Button(self.root_frame, text=strings['start_recording'])
         self.btn_pause = tk.Button(self.root_frame, text=strings['pause_recording'])
         self.btn_stop = tk.Button(self.root_frame, text=strings['stop_recording'])
+        self.btn_update = ttk.Button(self.root_frame, text=strings['update'], command=self.show_guitar_fretboard)
 
         self.guitar = Guitar(self.root_frame, self.root.maxsize()[0])
-        self.piano = Piano(self.root_frame, self.root.winfo_width())
+        self.piano = Piano(self.root_frame, self.root.winfo_width())           
         #endregion
 
         #region pack widgets
@@ -59,7 +61,7 @@ class App:
         row = 0
         self.check_show_guitar.grid(row=row, column=0)
         row += 1
-        self.guitar.canvas.grid(row=row, columnspan=4, sticky='ns')
+        self.guitar.canvas.grid(row=row, columnspan=4, sticky='ns')        
         row += 1
         self.check_show_piano.grid(row=row, column=0)
         row += 1
@@ -85,9 +87,16 @@ class App:
         self.input_scale_root.grid(row=row, column=1)
         label_scale_type.grid(row=row, column=2)
         self.input_scale_type.grid(row=row, column=3)
+        row += 1
+        self.btn_update.grid(row=row, column=1)
         #endregion
+        self.show_guitar_fretboard()
         
         self.root.mainloop()
+
+    def show_guitar_fretboard(self):
+        self.guitar.show_fretboard(self.input_scale_root.get(), self.input_scale_type.get(),
+                            self.input_fret_from.get(), self.input_fret_to.get())
 
 
 app = App()

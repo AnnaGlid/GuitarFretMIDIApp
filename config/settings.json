@@ -1,3 +1,4 @@
 {
-    "language": "eng"    
+    "language": "eng",
+    "interval_label_radius": 10
 }

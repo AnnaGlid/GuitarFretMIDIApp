@@ -18,6 +18,8 @@
         "major_triad": "Major triad",
         "minor_scale": "Minor scale",
         "minor_pentatonic":"Minor pentatonic",
-        "minor_triad": "Minor triad"
+        "minor_triad": "Minor triad",
+        "none": "None",
+        "update": "Update fretboard"
     }
 }
