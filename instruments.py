@@ -136,13 +136,14 @@ class Guitar():
             self.STRING_DICT[string_number]['coords']['y0'] - r,
             middle_x + r,
             self.STRING_DICT[string_number]['coords']['y0'] + r,
-            outline='black', fill='black'
+            outline=settings['interval_color'][interval]['bg'], 
+            fill=settings['interval_color'][interval]['bg']
         )
         self.canvas.create_text(
             middle_x,
             self.STRING_DICT[string_number]['coords']['y0'],
             text = str(constants['all_intervals'][interval].encode('cp1252').decode()),
-            fill='white'
+            fill=settings['interval_color'][interval]['font']
         )        
 
 

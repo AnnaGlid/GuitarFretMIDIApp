@@ -25,10 +25,13 @@ class App:
      
         self.check_state_show_guitar = tk.IntVar(value=1)
         self.check_show_guitar = tk.Checkbutton(self.root_frame, text=strings['show_guitar'], 
-                                                variable=self.check_state_show_guitar)
+                                                variable=self.check_state_show_guitar,
+                                                command=self.set_guitar_visibility)
         self.check_show_guitar
-        self.check_state_show_piano = tk.IntVar(value=1)
-        self.check_show_piano = tk.Checkbutton(self.root_frame, text=strings['show_piano'], variable=self.check_state_show_piano)
+        self.check_state_show_piano = tk.IntVar(value=0)
+        self.check_show_piano = tk.Checkbutton(self.root_frame, text=strings['show_piano'], 
+                                               variable=self.check_state_show_piano,
+                                               command=self.set_piano_visibility)
         label_fret_range = tk.Label(self.root_frame, text=strings['fret_range'])
         label_from = tk.Label(self.root_frame, text=strings['from'])
         self.input_fret_from = ttk.Combobox(self.root_frame, width=5, state='readonly',
@@ -61,16 +64,23 @@ class App:
         row = 0
         self.check_show_guitar.grid(row=row, column=0)
         row += 1
-        self.guitar.canvas.grid(row=row, columnspan=4, sticky='ns')        
-        row += 1
+        self.guitar_grid_params = {
+            "row":row, "columnspan":4, "sticky":'ns'
+        }        
+        self.guitar.canvas.grid(**self.guitar_grid_params)        
+        row += 1             
         self.check_show_piano.grid(row=row, column=0)
         row += 1
-        self.piano.canvas.grid(row=row, column=0, columnspan=4)
+        self.piano_grid_params = {
+            "row": row, "column": 0, "columnspan": 4
+        }
+        if self.check_state_show_piano.get():
+            self.piano.canvas.grid(**self.piano_grid_params)
         row += 1 
-        self.btn_record.grid(row=row, column=1, padx=5)
-        self.btn_pause.grid(row=row, column=2, padx=5)
-        self.btn_stop.grid(row=row, column=3, padx=5)
-        row += 1
+        # self.btn_record.grid(row=row, column=1, padx=5)
+        # self.btn_pause.grid(row=row, column=2, padx=5)
+        # self.btn_stop.grid(row=row, column=3, padx=5)
+        # row += 1
         sep = tk.Label(self.root_frame, text="", pady=10)
         sep.grid(row=row, column=0)
         row += 1
@@ -88,15 +98,27 @@ class App:
         label_scale_type.grid(row=row, column=2)
         self.input_scale_type.grid(row=row, column=3)
         row += 1
-        self.btn_update.grid(row=row, column=1)
+        self.btn_update.grid(row=row, column=0, pady=5)
         #endregion
-        
+
         self.show_guitar_fretboard()        
         self.root.mainloop()
 
     def show_guitar_fretboard(self):
         self.guitar.show_fretboard(self.input_scale_root.get(), self.input_scale_type.get(),
                             self.input_fret_from.get(), self.input_fret_to.get())
+        
+    def set_guitar_visibility(self):
+        if self.check_state_show_guitar.get():
+            self.guitar.canvas.grid(**self.guitar_grid_params)  
+        else:
+            self.guitar.canvas.grid_forget()  
 
+
+    def set_piano_visibility(self):
+        if self.check_state_show_piano.get():
+            self.piano.canvas.grid(**self.piano_grid_params)  
+        else:
+            self.piano.canvas.grid_forget()  
 
 app = App()
