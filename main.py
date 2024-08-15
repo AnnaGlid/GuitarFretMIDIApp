@@ -90,8 +90,8 @@ class App:
         row += 1
         self.btn_update.grid(row=row, column=1)
         #endregion
-        self.show_guitar_fretboard()
         
+        self.show_guitar_fretboard()        
         self.root.mainloop()
 
     def show_guitar_fretboard(self):
