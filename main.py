@@ -4,15 +4,13 @@ import ttkbootstrap as tb
 import ttkbootstrap.constants as tb_const
 from ttkbootstrap.scrolled import ScrolledFrame
 from tkinter import ttk
-from instruments import Guitar, Piano
 
-with open('config/settings.json') as f:
-    settings = load(f)
-with open('config/strings.json') as f:
-    strings = load(f)[settings['language']]
+
+from instruments import Guitar, Piano
+from settings import Settings
+
 with open('config/constants.json') as f:
     constants = load(f)
-
 
 class App:
     def __init__(self):
@@ -22,6 +20,13 @@ class App:
         self.root.title("See MIDI")
         self.root.geometry('{}x{}'.format(*self.root.maxsize()))
         self.root.state('zoomed')
+        self.settings_client = Settings(self.root)
+        menubar = tk.Menu(self.root)
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        settings_menu.add_command(label=self.settings_client.strings['settings'], command=self.settings_client.open)
+        menubar.add_cascade(label=self.settings_client.strings['settings'], menu=settings_menu)
+
+        self.root.config(menu=menubar)
         self.root_frame = ScrolledFrame(self.root, autohide=True)
         self.root_frame.pack(fill=tb_const.BOTH, expand=tb_const.YES, padx=10, pady=10)        
 
@@ -54,21 +59,21 @@ class App:
         self.piano.canvas.grid(sticky='nesw')        
         separator = tb.Separator(self.piano_frame, bootstyle="default", orient='horizontal')
         separator.grid(pady=30, sticky='we')
-        if settings['show_piano_on_start']:       
+        if self.settings_client.settings['show_piano_on_start']:       
             self.piano_frame.grid(**self.piano_frame_grid_params)        
         
         #endregion
 
         #region settings
-        self.settings_frame = tb.Labelframe(self.root_frame, bootstyle="primary", text=strings['settings'])
+        self.settings_frame = tb.Labelframe(self.root_frame, bootstyle="primary", text=self.settings_client.strings['settings'])
         self.check_state_show_guitar = tk.IntVar(value=1)
-        self.check_show_guitar = tb.Checkbutton(self.settings_frame, text=strings['show_guitar'],
+        self.check_show_guitar = tb.Checkbutton(self.settings_frame, text=self.settings_client.strings['show_guitar'],
                                                 bootstyle="default-round-toggle",
                                                 variable=self.check_state_show_guitar,
                                                 command=self.set_guitar_visibility)        
 
-        self.check_state_show_piano = tk.IntVar(value=settings['show_piano_on_start'])
-        self.check_show_piano = tb.Checkbutton(self.settings_frame, text=strings['show_piano'], 
+        self.check_state_show_piano = tk.IntVar(value=self.settings_client.settings['show_piano_on_start'])
+        self.check_show_piano = tb.Checkbutton(self.settings_frame, text=self.settings_client.strings['show_piano'], 
                                                bootstyle="default-round-toggle",
                                                variable=self.check_state_show_piano,
                                                command=self.set_piano_visibility)
@@ -76,12 +81,12 @@ class App:
         self.check_show_piano.grid(padx=20, pady=10, row= 1)
 
         #region fret range
-        self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="secondary", text=strings['fret_range'])
-        label_from = tb.Label(self.fret_range_frame, text=strings['from'])
+        self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="secondary", text=self.settings_client.strings['fret_range'])
+        label_from = tb.Label(self.fret_range_frame, text=self.settings_client.strings['from'])
         self.input_fret_from = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
                                                 values=list(range(1,constants['frets_number']+1)))
         self.input_fret_from.current(0)
-        label_to = tb.Label(self.fret_range_frame, text=strings['to'])
+        label_to = tb.Label(self.fret_range_frame, text=self.settings_client.strings['to'])
         self.input_fret_to = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
                                                 values=list(range(1,constants['frets_number']+1)))
         self.input_fret_to.current(constants['frets_number']-1)
@@ -93,7 +98,7 @@ class App:
         #endregion
 
         #region root scale
-        self.scale_root_frame = tb.Labelframe(self.settings_frame, text=strings['scale_root'], bootstyle="secondary")
+        self.scale_root_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['scale_root'], bootstyle="secondary")
         self.input_scale_root = tb.Combobox(self.scale_root_frame, width=7, state='readonly',
                                              values=constants['all_notes'])
         self.input_scale_root.current(0)
@@ -102,18 +107,18 @@ class App:
         #endregion 
 
         #region scale type
-        self.scale_type_frame = tb.Labelframe(self.settings_frame, text=strings['type'], bootstyle="secondary")
+        self.scale_type_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['type'], bootstyle="secondary")
         self.input_scale_type = tb.Combobox(self.scale_type_frame, width=15, state='readonly',
-                                             values=[strings[s] for s in constants['scale_types']])
+                                             values=[self.settings_client.strings[s] for s in constants['scale_types']])
         self.input_scale_type.current(0)
         self.input_scale_type.grid(pady=10, padx=30)
         self.scale_type_frame.grid(row=2, column=3, padx=20, pady=20)
         #endregion
 
         # ok button
-        self.btn_update = tb.Button(self.settings_frame, text=strings['update'], command=self.show_guitar_fretboard,
+        self.btn_update = tb.Button(self.settings_frame, text=self.settings_client.strings['update'], command=self.show_guitar_fretboard,
                                     bootstyle="primary, outline", takefocus=False)
-        self.btn_update.grid(row=2, column=4, padx=10, pady=5)
+        self.btn_update.grid(row=2, column=4, padx=10, ipady=10)
 
 
         self.settings_frame.grid(row=row, sticky='news', padx=20, pady=10)

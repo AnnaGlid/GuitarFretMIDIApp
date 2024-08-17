@@ -1,0 +1,55 @@
+{
+    "language": "eng",
+    "interval_label_radius": 12,
+    "show_piano_on_start": false,
+    "interval_color":{
+        "R": {
+            "bg": "#bf0404",
+            "font": "#ffffff"
+        },
+        "b2": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        },
+        "d2": {
+            "bg": "#000000",
+            "font": "#ffffff"
+        },
+        "b3": {
+            "bg": "#01420d",
+            "font": "#ffffff"
+        },
+        "d3": {
+            "bg": "#4bcc63",
+            "font": "#ffffff"
+        },
+        "p4": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        }, 
+        "b5": {
+            "bg": "#a6a307",
+            "font": "#ffffff"
+        }, 
+        "p5": {
+            "bg": "#f7f574",
+            "font": "#000000"
+        },
+        "b6": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        }, 
+        "d6": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        },
+        "b7": {
+            "bg": "#431185",
+            "font": "#ffffff"
+        },
+        "d7": {
+            "bg": "#a473e6",
+            "font": "#000000"
+        }
+    }
+}

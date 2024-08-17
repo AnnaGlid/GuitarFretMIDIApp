@@ -129,7 +129,6 @@ class Guitar():
                     self.draw_interval(string, fret, interval)
 
     def draw_interval(self, string: str, fret: str, interval: str):
-        print(f'Drawing: {string}, {fret}, {interval}')
         r = settings['interval_label_radius']
         string_number = constants['guitar_strings'][string]['number']
         middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2

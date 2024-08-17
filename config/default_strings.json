@@ -60,15 +60,6 @@
         "settings": "Ustawienia",
         "eng": "English",
         "pl": "Polski",
-        "choose_language": "Wybierz język",
-        "interval_label_radius": "Promień oznaczenia interwału",
-        "show_piano_on_start": "Domyślnie pokazuj pianino",
-        "interval_color": "Kolory oznaczeń interwałów",
-        "on_start": "Domyślnie",
-        "interval": "Interwał",
-        "interval_bg_color": "Kolor tła",
-        "interval_font_color": "Kolor czcionki",
-        "save": "Zapisz",
-        "cancel": "Anuluj"
+        "choose_language": "Wybierz język"
     }    
 }
