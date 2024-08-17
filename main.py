@@ -1,5 +1,6 @@
 from json import load
 import tkinter as tk
+import ttkbootstrap as tb
 from tkinter import ttk
 from instruments import Guitar, Piano
 
@@ -15,7 +16,7 @@ class App:
 
     def __init__(self):
         #region create widgets
-        self.root = tk.Tk()
+        self.root = tb.Window(themename="cosmo")
         self.root.title("See MIDI")
         self.root.geometry('{}x{}'.format(*self.root.maxsize()))
         self.root_frame = tk.Frame(self.root, pady=30, padx=40)

@@ -13,7 +13,7 @@ class Guitar():
 
     def __init__(self, root, max_width):        
         self.CANVAS_WIDTH = max_width
-        self.FRETBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 10     # x axis
+        self.FRETBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
         self.FRETBOARD_WIDTH = self.FRETBOARD_LENGTH // 7
         self.STRING_NUMBER = 6
         self.FRETS_NUMBER = 24
@@ -27,7 +27,7 @@ class Guitar():
         self.FRET_DICT = {}
         self.STRING_DICT = {} # High E is first string, low E is 6th string
 
-        self.canvas = tk.Canvas(root, width=self.CANVAS_WIDTH, height=self.FRETBOARD_WIDTH+self.TEXT_MARGIN)
+        self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.FRETBOARD_WIDTH+self.TEXT_MARGIN))
         distance = 0
         for fret in range(0, self.FRETS_NUMBER + 1):
             location = self.POTENTIAL_STRING_LENGTH - distance
@@ -105,7 +105,7 @@ class Guitar():
 
         for string in range(1, self.STRING_NUMBER+1):
             self.canvas.create_line(*self.STRING_DICT[string]['coords'].values(),
-                                    fill=constants['guitar_strings_color'], width=0.5 + 0.5*string)        
+                                    fill=constants['guitar_strings_color'], width=int(0.5 + 0.5*string))
         
 
     def show_fretboard(self, root_note, scale_type_name, first_fret, last_fret):
