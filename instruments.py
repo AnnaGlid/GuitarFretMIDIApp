@@ -11,7 +11,8 @@ with open('config/constants.json') as f:
 
 class Guitar():
 
-    def __init__(self, root, max_width):        
+    def __init__(self, root, max_width):    
+        self.font = ('Constantia', 10)
         self.CANVAS_WIDTH = max_width
         self.FRETBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
         self.FRETBOARD_WIDTH = self.FRETBOARD_LENGTH // 7
@@ -70,7 +71,8 @@ class Guitar():
                 self.canvas.create_text(
                     self.FRET_DICT[fret-1]['coords']['x0'] + (self.FRET_DICT[fret]['coords']['x0'] - self.FRET_DICT[fret-1]['coords']['x0'])/2,
                     float(self.FRETBOARD_WIDTH + self.TEXT_MARGIN/2),
-                    text = str(fret)
+                    text = str(fret),
+                    font=self.font
                 )
 
         for fret in range(1, self.FRETS_NUMBER+1):
@@ -149,4 +151,8 @@ class Guitar():
 
 class Piano():
     def __init__(self, root, max_width):
-        self.canvas = tk.Canvas(root)
+        self.CANVAS_WIDTH = max_width
+        self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
+        self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 7
+        self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.KEYBOARD_WIDTH))
+        self.canvas.create_rectangle(0,0, self.KEYBOARD_LENGTH, self.KEYBOARD_WIDTH, fill="pink")

@@ -4,7 +4,7 @@
     "guitar_frets_color": "#EFD99D",
     "guitar_strings_color": "#373737",    
     "frets_number": 24,
-    "frets_labeled": [3,5,7,9,12,15,17,19,21],
+    "frets_labeled": [3,5,7,9,12,15,17,19,21,24],
     "all_notes_grouped":[
         ["C", "B#"], ["C#", "Db"], ["D"],
         ["D#", "Eb"], ["E", "Fb"], ["E#", "F"],

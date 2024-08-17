@@ -1,6 +1,7 @@
 {
     "language": "eng",
-    "interval_label_radius": 10,
+    "interval_label_radius": 12,
+    "show_piano_on_start": false,
     "interval_color":{
         "R": {
             "bg": "#bf0404",

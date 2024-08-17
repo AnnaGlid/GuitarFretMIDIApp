@@ -1,7 +1,7 @@
 {
     "eng":{
-        "show_guitar": "Show guitar?",
-        "show_piano": "Show piano?",
+        "show_guitar": "Show guitar",
+        "show_piano": "Show piano",
         "fret_range": "Choose fret range",
         "from": "from",
         "to": "to",
@@ -20,6 +20,7 @@
         "minor_pentatonic":"Minor pentatonic",
         "minor_triad": "Minor triad",
         "none": "None",
-        "update": "Update fretboard"
+        "update": "Update fretboard",
+        "settings": "Settings"
     }
 }
