@@ -3,10 +3,6 @@
         "eng",
         "pl"
     ],
-    "guitar_neck_color" : "#C0994B",
-    "guitar_dots_color": "#FFF0C9",
-    "guitar_frets_color": "#EFD99D",
-    "guitar_strings_color": "#373737",    
     "frets_number": 24,
     "frets_labeled": [3,5,7,9,12,15,17,19,21,24],
     "all_notes_grouped":[

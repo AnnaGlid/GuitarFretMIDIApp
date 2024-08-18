@@ -33,7 +33,16 @@
         "interval_bg_color": "Background color",
         "interval_font_color": "Font color",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "revert_to_default": "Revert to default",
+        "ask_revert_to_default": "Do you want to revert to default value settings?",
+        "guitar_colors": "Guitar colors",
+        "guitar_neck_color": "Guitar neck color",
+        "guitar_dots_color": "Dots color",
+        "guitar_frets_color": "Frets color",
+        "guitar_strings_color": "Strings color",
+        "choose_theme": "Choose light/dark theme (applied after restarting the app)",
+        "dark_theme": "Dark theme"
     },
     "pl":{
         "show_guitar": "Pokaż gitarę",
@@ -60,6 +69,24 @@
         "settings": "Ustawienia",
         "eng": "English",
         "pl": "Polski",
-        "choose_language": "Wybierz język"
+        "choose_language": "Wybierz język",
+        "interval_label_radius": "Promień oznaczenia interwału",
+        "show_piano_on_start": "Domyślnie pokazuj pianino",
+        "interval_color": "Kolory oznaczeń interwałów",
+        "on_start": "Domyślnie",
+        "interval": "Interwał",
+        "interval_bg_color": "Kolor tła",
+        "interval_font_color": "Kolor czcionki",
+        "save": "Zapisz",
+        "cancel": "Anuluj",
+        "revert_to_default": "Przywróć domyślne",
+        "ask_revert_to_default": "Czy chcesz przywrócić domyślne ustawienia?",
+        "guitar_colors": "Kolory gitary",
+        "guitar_neck_color": "Kolor gryfu",
+        "guitar_dots_color": "Kolor kropek na gryfie",
+        "guitar_frets_color": "Kolor progów",
+        "guitar_strings_color": "Kolor strun",
+        "choose_theme": "Wybierz jasny/ciemny motyw (zastosowany przy ponownym uruchomieniu aplikacji)",
+        "dark_theme": "Ciemny motyw"
     }    
 }

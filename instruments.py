@@ -1,17 +1,15 @@
 from json import load
 import tkinter as tk
 
-with open('config/settings.json') as f:
-    settings = load(f)
-with open('config/strings.json') as f:
-    strings = load(f)[settings['language']]
+
 with open('config/constants.json') as f:
     constants = load(f)
 
 
 class Guitar():
 
-    def __init__(self, root, max_width):    
+    def __init__(self, root, max_width, settings_client):    
+        self.settings_client = settings_client
         self.font = ('Constantia', 10)
         self.CANVAS_WIDTH = max_width
         self.FRETBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
@@ -64,15 +62,16 @@ class Guitar():
         self.draw_guitar()        
     
     def draw_guitar(self):
-        self.canvas.create_rectangle(0, 0, self.FRETBOARD_LENGTH, self.FRETBOARD_WIDTH,  outline=constants['guitar_neck_color'], fill=constants['guitar_neck_color'])
+        self.canvas.create_rectangle(0, 0, self.FRETBOARD_LENGTH, self.FRETBOARD_WIDTH,  
+                outline=self.settings_client.settings['guitar_neck_color'], fill=self.settings_client.settings['guitar_neck_color'])
         for fret in range(0, self.FRETS_NUMBER + 1):  
-            self.canvas.create_line(*self.FRET_DICT[fret]['coords'].values(), fill=constants['guitar_frets_color'], width=2)
+            self.canvas.create_line(*self.FRET_DICT[fret]['coords'].values(), 
+                                    fill=self.settings_client.settings['guitar_frets_color'], width=2)
             if fret in constants['frets_labeled']:
                 self.canvas.create_text(
                     self.FRET_DICT[fret-1]['coords']['x0'] + (self.FRET_DICT[fret]['coords']['x0'] - self.FRET_DICT[fret-1]['coords']['x0'])/2,
                     float(self.FRETBOARD_WIDTH + self.TEXT_MARGIN/2),
-                    text = str(fret),
-                    font=self.font
+                    text = str(fret)
                 )
 
         for fret in range(1, self.FRETS_NUMBER+1):
@@ -87,7 +86,8 @@ class Guitar():
                         middle_point[1] + self.DOT_SIZE,
                         middle_point[0] + self.DOT_SIZE,
                         middle_point[1] - self.DOT_SIZE,
-                        outline=constants['guitar_dots_color'], fill=constants['guitar_dots_color']
+                        outline=self.settings_client.settings['guitar_dots_color'], 
+                        fill=self.settings_client.settings['guitar_dots_color']
                 )
             elif fret in self.TWO_DOT_FRETS:
                 self.canvas.create_oval(
@@ -95,19 +95,22 @@ class Guitar():
                         self.FRET_DICT[fret]['coords']['y0'] + self.DOT_SIZE*3,
                         middle_point[0] + self.DOT_SIZE,
                         self.FRET_DICT[fret]['coords']['y0'] + self.DOT_SIZE*5,
-                        outline=constants['guitar_dots_color'], fill=constants['guitar_dots_color']
+                        outline=self.settings_client.settings['guitar_dots_color'], 
+                        fill=self.settings_client.settings['guitar_dots_color']
                 )           
                 self.canvas.create_oval(
                         middle_point[0] - self.DOT_SIZE,
                         self.FRET_DICT[fret]['coords']['y1'] - self.DOT_SIZE*5,
                         middle_point[0] + self.DOT_SIZE,
                         self.FRET_DICT[fret]['coords']['y1'] - self.DOT_SIZE*3,
-                        outline=constants['guitar_dots_color'], fill=constants['guitar_dots_color']
+                        outline=self.settings_client.settings['guitar_dots_color'], 
+                        fill=self.settings_client.settings['guitar_dots_color']
                 )   
 
         for string in range(1, self.STRING_NUMBER+1):
             self.canvas.create_line(*self.STRING_DICT[string]['coords'].values(),
-                                    fill=constants['guitar_strings_color'], width=int(0.5 + 0.5*string))
+                                    fill=self.settings_client.settings['guitar_strings_color'], 
+                                    width=int(0.5 + 0.5*string))
         
 
     def show_fretboard(self, root_note, scale_type_name, first_fret, last_fret):
@@ -116,7 +119,7 @@ class Guitar():
         root_note_idx = constants['all_notes_grouped'].index(
             next(filter(lambda x: root_note in x, constants['all_notes_grouped']))
         )
-        scale_type = next(filter(lambda x: strings[x]==scale_type_name, strings))
+        scale_type = next(filter(lambda x: self.settings_client.strings[x]==scale_type_name, self.settings_client.strings))
         sorted_notes = constants['all_notes_grouped'][root_note_idx:] + constants['all_notes_grouped'][: root_note_idx]
         assigned_intervals = {}
         for note, interval in zip(sorted_notes, constants['all_intervals']):
@@ -129,7 +132,7 @@ class Guitar():
                     self.draw_interval(string, fret, interval)
 
     def draw_interval(self, string: str, fret: str, interval: str):
-        r = settings['interval_label_radius']
+        r = self.settings_client.settings['interval_label_radius']
         string_number = constants['guitar_strings'][string]['number']
         middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
         self.canvas.create_oval(
@@ -137,19 +140,22 @@ class Guitar():
             self.STRING_DICT[string_number]['coords']['y0'] - r,
             middle_x + r,
             self.STRING_DICT[string_number]['coords']['y0'] + r,
-            outline=settings['interval_color'][interval]['bg'], 
-            fill=settings['interval_color'][interval]['bg']
+            outline=self.settings_client.settings['interval_color'][interval]['bg'], 
+            fill=self.settings_client.settings['interval_color'][interval]['bg']
         )
         self.canvas.create_text(
             middle_x,
             self.STRING_DICT[string_number]['coords']['y0'],
+            font=('Aria', int(r - r/5)),
             text = str(constants['all_intervals'][interval].encode('cp1252').decode()),
-            fill=settings['interval_color'][interval]['font']
+            fill=self.settings_client.settings['interval_color'][interval]['font'],
+            
         )        
 
 
 class Piano():
-    def __init__(self, root, max_width):
+    def __init__(self, root, max_width, settings_client):
+
         self.CANVAS_WIDTH = max_width
         self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
         self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 7
