@@ -146,7 +146,7 @@ class Guitar():
         self.canvas.create_text(
             middle_x,
             self.STRING_DICT[string_number]['coords']['y0'],
-            font=('Aria', int(r - r/5)),
+            font=('Aria', self.settings_client.settings['interval_font_size']),
             text = str(constants['all_intervals'][interval].encode('cp1252').decode()),
             fill=self.settings_client.settings['interval_color'][interval]['font'],
             
@@ -154,10 +154,52 @@ class Guitar():
 
 
 class Piano():
+
     def __init__(self, root, max_width, settings_client):
 
         self.CANVAS_WIDTH = max_width
-        self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 25  # x axis
-        self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 7
+        self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 10  # x axis, horizontal
+        self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 5 # y axis, vertical
         self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.KEYBOARD_WIDTH))
-        self.canvas.create_rectangle(0,0, self.KEYBOARD_LENGTH, self.KEYBOARD_WIDTH, fill="pink")
+        self.OCTAVES_NUMBER = 4
+        self.KEYS_PADDING_BOTTOM = 10
+
+        self.white_key_width = self.KEYBOARD_LENGTH / (self.OCTAVES_NUMBER*7) # x axis, horizontal
+        self.white_key_length = self.KEYBOARD_WIDTH - self.KEYS_PADDING_BOTTOM # y axis, vertical
+        self.black_key_width = self.white_key_width * 0.75
+        self.black_key_length = self.white_key_length * 0.6
+        self.b = b = 'b'    # black key signature
+        self.w = w ='w'    # white key signature
+        self.octave = [w,b,w,b,w, w,b,w,b,w,b,w] # c, c#, d, d#, e,   f, f#, g, g#, a, a#, b
+        # 4 octaves from E to E (like in guitar)
+        self.all_keys = self.octave[4:] + self.octave * 3 + self.octave[:5]
+        self.keys = {}
+        idx = 4 # starting from E
+        x_pos_white = 0
+        for key_num, key in enumerate(self.all_keys):
+            self.keys[key_num] = {
+                'note': constants['all_notes_grouped'][idx],
+                'type': key
+            }
+            idx = idx + 1 if idx+1 < len(constants['all_notes_grouped']) else 0
+            if key == self.w:
+                self.keys[key_num]['x_pos'] = x_pos_white
+                x_pos_white = x_pos_white + self.white_key_width 
+            else:
+                self.keys[key_num]['x_pos'] = x_pos_white - (self.black_key_width / 2)
+                
+        self.sorted_keys = dict(sorted(self.keys.items(), key=lambda item: item[1]['type'], reverse=True))
+        self.draw_piano()
+
+    def draw_key(self, key_type: str, x_pos: float|int):
+        if key_type == self.w:
+            self.canvas.create_rectangle(x_pos, 0, self.white_key_width + x_pos, self.white_key_length,
+                                         outline='black', fill='white')
+        else:
+            self.canvas.create_rectangle(x_pos, 0, self.black_key_width + x_pos, self.black_key_length,
+                                         outline='black', fill='black')
+            
+
+    def draw_piano(self):
+        for key, values in self.sorted_keys.items():
+            self.draw_key(values['type'], values['x_pos'])

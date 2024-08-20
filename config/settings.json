@@ -1,19 +1,20 @@
 {
     "language": "eng",
-    "interval_label_radius": 16,
-    "show_piano_on_start": 0,
+    "interval_label_radius": 18,
+    "show_piano_on_start": 1,
     "guitar_neck_color": "#C0994B",
     "guitar_dots_color": "#FFF0C9",
     "guitar_frets_color": "#EFD99D",
     "guitar_strings_color": "#373737",
-    "dark_theme": 0,
+    "dark_theme": 1,
+    "interval_font_size": 13,
     "interval_color": {
         "R": {
             "bg": "#bf0404",
             "font": "#ffffff"
         },
         "b2": {
-            "bg": "#ffffff",
+            "bg": "#19e680",
             "font": "#000000"
         },
         "d2": {

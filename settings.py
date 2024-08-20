@@ -43,6 +43,9 @@ class Settings:
         if self.settings['interval_label_radius'] != self.radius_size.get():
             anything_changed = True
             self.settings['interval_label_radius'] = self.radius_size.get()
+        if self.settings['interval_font_size'] != self.interval_font_size.get():
+            anything_changed = True
+            self.settings['interval_font_size'] = self.interval_font_size.get()
         if self.settings['show_piano_on_start'] != self.check_state_show_piano.get():
             anything_changed = True
             self.settings['show_piano_on_start'] = self.check_state_show_piano.get()
@@ -93,7 +96,7 @@ class Settings:
         window_row = 0
         self.window = tk.Toplevel()
         self.window.title(self.strings['settings'])
-        self.window.geometry('700x800')
+        self.window.geometry('800x800')
 
         scroll_frame = ScrolledFrame(self.window, autohide=True)
         scroll_frame.pack(fill=tb_const.BOTH, expand=tb_const.YES, padx=10, pady=10)
@@ -114,11 +117,19 @@ class Settings:
         lang_frame.grid(padx=padx, pady=pady, row=window_row)
         window_row += 1
 
-        self.radius_size = tk.IntVar(value=self.settings['interval_label_radius'])
+        self.radius_size = tk.IntVar(value=self.settings['interval_label_radius'])        
         radius_frame = tb.Labelframe(scroll_frame, text=self.strings['interval_label_radius'])
-        radius_input = tb.Spinbox(radius_frame, from_=3, to=25, textvariable=self.radius_size, state='readonly')
-        radius_input.grid(padx=padx, pady=pady)
-        radius_frame.grid(padx=padx, pady=pady, row=window_row)
+        radius_input = tb.Spinbox(radius_frame, from_=3, to=25, textvariable=self.radius_size, state='readonly')        
+        radius_input.grid(padx=padx, pady=pady)        
+        radius_frame.grid(padx=padx, pady=pady, row=window_row)        
+        window_row += 1
+
+        interval_font_size_frame = tb.Labelframe(scroll_frame, text=self.strings['interval_font_size'])
+        self.interval_font_size = tk.IntVar(value=self.settings['interval_font_size'])
+        interval_dont_size_input = tb.Spinbox(interval_font_size_frame, from_=1, to=30, 
+                                              textvariable=self.interval_font_size, state='readonly')
+        interval_dont_size_input.grid(padx=padx, pady=pady)
+        interval_font_size_frame.grid(padx=padx, pady=pady, row=window_row)
         window_row += 1
 
         show_on_start_frame = tb.Labelframe(scroll_frame, text=self.strings['on_start'])

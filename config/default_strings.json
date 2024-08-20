@@ -42,7 +42,8 @@
         "guitar_frets_color": "Frets color",
         "guitar_strings_color": "Strings color",
         "choose_theme": "Choose light/dark theme (applied after restarting the app)",
-        "dark_theme": "Dark theme"
+        "dark_theme": "Dark theme",
+        "interval_font_size": "Interval label font size"
     },
     "pl":{
         "show_guitar": "Pokaż gitarę",
@@ -86,7 +87,8 @@
         "guitar_dots_color": "Kolor kropek na gryfie",
         "guitar_frets_color": "Kolor progów",
         "guitar_strings_color": "Kolor strun",
-        "choose_theme": "Wybierz jasny/ciemny motyw (zastosowany przy ponownym uruchomieniu aplikacji)",
-        "dark_theme": "Ciemny motyw"
+        "choose_theme": "Wybierz motyw (zastosowany przy ponownym uruchomieniu aplikacji)",
+        "dark_theme": "Ciemny motyw",
+        "interval_font_size": "Rozmiar czcionki oznaczeń interwałów"
     }    
 }
