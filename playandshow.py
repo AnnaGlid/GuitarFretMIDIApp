@@ -1,11 +1,13 @@
 import pygame
+import mido
 
 MARGIN_X = 40
 MARGIN_Y = 80
 
 class Visualizer():
     def __init__(self, settings_client, size: tuple, show_guitar: bool, show_piano: bool,
-                 guitar, piano, first_fret: int, last_fret: int, scale_type: str):
+                 guitar, piano, first_fret: int, last_fret: int, scale_type: str,
+                 play_demo: bool=False):
         self.settings_client = settings_client
         self.size = size
         self.guitar = guitar
@@ -15,6 +17,8 @@ class Visualizer():
         self.scale_type = scale_type
         self.show_guitar = show_guitar
         self.show_piano = show_piano
+        self.play_demo = play_demo
+        self.intervals = self.settings_client.constants['scale_types'][scale_type]['intervals']
         pygame.font.init()
         self.fret_font = pygame.font.Font(pygame.font.get_default_font(), 16)
         self.interval_font = pygame.font.Font(pygame.font.get_default_font(), 
@@ -32,7 +36,10 @@ class Visualizer():
         if self.show_guitar:
             if self.show_piano:
                 self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH
-                self.run_both(screen, fill_color)                
+                if self.play_demo:
+                    self.run_demo(screen, fill_color)
+                else:
+                    self.run_both(screen, fill_color)                
             else:
                 self.run_guitar(screen, fill_color)
         elif self.show_piano:
@@ -59,9 +66,40 @@ class Visualizer():
             self.draw_piano_base(screen)
 
             pygame.display.flip()
+        pygame.quit()
 
+    def run_guitar(self, screen, fill_color):
+        clock = pygame.time.Clock()        
+        dt = 0
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            screen.fill(fill_color)
+            self.draw_guitar_base(screen)
+            self.draw_guitar_strings(screen)
+            self.show_fretboard(screen, self.scale_type, self.first_fret, self.last_fret)
+
+            pygame.display.flip()
         pygame.quit()        
 
+    def run_piano(self, screen, fill_color):
+        clock = pygame.time.Clock()        
+        dt = 0
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            screen.fill(fill_color)
+            self.draw_piano_base(screen)
+
+            pygame.display.flip()
+        pygame.quit()        
+ 
     def draw_guitar_base(self, screen: pygame.surface):
         pygame.draw.rect(screen, self.settings_client.settings['guitar_neck_color'], 
                          pygame.Rect(MARGIN_X, MARGIN_Y, self.guitar.FRETBOARD_LENGTH, self.guitar.FRETBOARD_WIDTH))
@@ -107,33 +145,28 @@ class Visualizer():
             for fret in range(int(first_fret), int(last_fret)+1):
                 note = self.settings_client.constants['guitar_strings'][string]['frets'][fret]
                 interval = self.guitar.assigned_intervals[str(note)]
-                if interval in self.settings_client.constants['scale_types'][scale_type]['intervals']:
-                    self.draw_interval(screen, string, fret, interval)
+                if interval in self.intervals:
+                    self.draw_interval(screen, fret, interval, string)
 
-    def draw_interval(self, screen, string: str, fret: str, interval: str):
-        r = self.settings_client.settings['interval_label_radius']
-        string_number = self.settings_client.constants['guitar_strings'][string]['number']
+    def draw_interval(self, screen, fret: str, interval: str, string: str|None=None, 
+                      string_number:int|None=None, is_played: bool=False):
+        color = self.settings_client.settings['interval_color'][interval]['bg'] if not is_played else 'red'
+        string_number = self.settings_client.constants['guitar_strings'][string]['number'] if not string_number else string_number
         middle_x = MARGIN_X + (self.guitar.FRET_DICT[fret-1]['coords']['x0'] + self.guitar.FRET_DICT[fret]['coords']['x0']) / 2
-        pygame.draw.circle(screen, self.settings_client.settings['interval_color'][interval]['bg'],
+        pygame.draw.circle(screen, color,
                            (middle_x, MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']),
                            radius=self.settings_client.settings['interval_label_radius'])
         
-        surface = self.interval_font.render(
-            self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode().replace('♭','b'), 
-                False, self.settings_client.settings['interval_color'][interval]['font'])
-        surface_rect = surface.get_rect()
-        surface_rect.center = (
-                middle_x,
-                MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']
-        )
-        screen.blit(surface, surface_rect)        
-        # self.canvas.create_text(
-        #     middle_x,
-        #     self.guitar.STRING_DICT[string_number]['coords']['y0'],
-        #     font=('Aria', self.settings_client.settings['interval_font_size']),
-        #     text = str(self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode()),
-        #     fill=self.settings_client.settings['interval_color'][interval]['font'],            
-        # )                    
+        if interval in self.intervals:
+            surface = self.interval_font.render(
+                self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode().replace('♭','b'), 
+                    False, self.settings_client.settings['interval_color'][interval]['font'])
+            surface_rect = surface.get_rect()
+            surface_rect.center = (
+                    middle_x,
+                    MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']
+            )
+            screen.blit(surface, surface_rect)        
 
     def update_guitar(self):
         pass
@@ -174,3 +207,48 @@ class Visualizer():
                 if event.type == pygame.QUIT:
                     running = False
         pygame.quit()      
+
+    def run_demo(self, screen, fill_color):
+        clock = pygame.time.Clock()        
+        dt = 0
+        mid = mido.MidiFile('mad.mid')
+        signals = mid.play(meta_messages=True)
+        screen.fill(fill_color)
+        self.draw_guitar_base(screen)
+        self.draw_guitar_strings(screen)
+        self.show_fretboard(screen, self.scale_type, self.first_fret, self.last_fret)
+        self.draw_piano_base(screen)        
+        running = True
+        pygame.mixer.music.load("mad.mid")
+        pygame.mixer.music.play(-1, 0.0)
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            if signal := next(signals, None):
+                if signal.type == 'note_on':
+                    if signal.note not in self.guitar.MIDI_INFO_DICT[2]:
+                        continue
+                    fret_number = self.guitar.MIDI_INFO_DICT[2][signal.note]['fret_number']
+                    interval = self.guitar.MIDI_INFO_DICT[2][signal.note]['interval']                    
+                    if signal.velocity > 0:
+                        if signal.note not in self.guitar.MIDI_INFO_DICT[2]:
+                            continue
+                        self.draw_interval(screen, fret_number, interval, 
+                                           string_number=2, is_played=True)
+                    else:
+                        self.draw_interval(screen, fret_number, interval, 
+                                           string_number=2, is_played=False)
+                elif signal.type == 'note_off':
+                    print("NOTE OFF SINGAL!")
+                        # self.draw_interval(screen, fret_number, interval, 
+                        #                    string_number=2, is_played=False)
+
+                # screen.fill(fill_color)
+                # self.draw_guitar_base(screen)
+                # self.draw_guitar_strings(screen)
+                # self.show_fretboard(screen, self.scale_type, self.first_fret, self.last_fret)
+                # self.draw_piano_base(screen)
+                pygame.display.flip()
+                d=1
+        pygame.quit()        

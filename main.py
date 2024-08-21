@@ -121,14 +121,20 @@ class App:
                                     bootstyle="default", takefocus=False)
         self.btn_update.grid(row=2, column=4, padx=10, ipady=10)
 
+        btn = tb.Button(self.settings_frame, text=self.settings_client.strings['start_visuals'], command=self.play,
+                        takefocus=False)
+        btn.grid(row=2, column=5, padx=10, ipady=10)
 
         self.settings_frame.grid(row=row, sticky='news', padx=20, pady=10)
         row += 1
-
         self.show_guitar_fretboard()        
 
-        btn = tb.Button(self.settings_frame, text="play test", command=self.play)
-        btn.grid(row=2, column=5, padx=10, pady=10)
+        self.check_state_play_demo= tk.IntVar(value=0)
+        self.check_play_demo = tb.Checkbutton(self.root_frame, text='demo?', 
+                                               bootstyle="default-round-toggle",
+                                               variable=self.check_state_play_demo)
+        
+        self.check_play_demo.grid(row=row, padx=20, pady=400)        
         self.root.mainloop()
 
     def update_app(self):
@@ -176,7 +182,8 @@ class App:
                          piano = self.piano,
                          first_fret = self.input_fret_from.get(),
                          last_fret = self.input_fret_to.get(),
-                         scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings))
+                         scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
+                         play_demo = 1 # DEBUG  self.check_state_play_demo
                          )
 
 app = App()

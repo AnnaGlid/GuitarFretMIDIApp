@@ -28,7 +28,7 @@ class Guitar():
             (string number) 1: {
                 (midi value) 64 : {
                     "fret_number": 1
-                    "interval_name": "p4"
+                    "interval": "p4"
                 } 
             }
         }
@@ -157,7 +157,7 @@ class Guitar():
                 interval = self.assigned_intervals[str(note)]
                 self.MIDI_INFO_DICT[string_num][midi_val] = {
                     "fret_number": fret,
-                    "interval_name": self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode()
+                    "interval": interval
                 }
                 if fret in range(int(first_fret), int(last_fret)+1) and \
                         interval in self.settings_client.constants['scale_types'][scale_type]['intervals']:
