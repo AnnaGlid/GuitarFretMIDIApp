@@ -1,7 +1,7 @@
 import pygame
 
 MARGIN_X = 40
-MARGIN_Y = 40
+MARGIN_Y = 80
 
 class Visualizer():
     def __init__(self, settings_client, size: tuple, show_guitar: bool, show_piano: bool,
@@ -28,28 +28,24 @@ class Visualizer():
         icon = pygame.image.load('data/seeMidi.ico')
         pygame.display.set_icon(icon)        
         fill_color = 'black' if self.settings_client.settings['dark_theme'] else 'white'
+        self.piano_margin_y = 0
         if self.show_guitar:
             if self.show_piano:
-                self.run_both(screen, fill_color)
+                self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH
+                self.run_both(screen, fill_color)                
             else:
                 self.run_guitar(screen, fill_color)
         elif self.show_piano:
-            self.run_piano(screen, fill_color)
+            self.piano_margin_y = MARGIN_Y
+            self.run_piano(screen, fill_color)            
         else:
             self.show_bored_screen(screen, fill_color)
 
 
-    def run_both(self):
-        pygame.init()
-        screen = pygame.display.set_mode((self.size[0], self.size[1]))
-        pygame.display.set_caption('Visualizing')
-        icon = pygame.image.load('data/seeMidi.ico')
-        pygame.display.set_icon(icon)
-        clock = pygame.time.Clock()
-        running = True
+    def run_both(self, screen, fill_color):
+        clock = pygame.time.Clock()        
         dt = 0
-        fill_color = 'black' if self.settings_client.settings['dark_theme'] else 'white'
-
+        running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -60,9 +56,10 @@ class Visualizer():
             self.draw_guitar_strings(screen)
             self.show_fretboard(screen, self.scale_type, self.first_fret, self.last_fret)
 
+            self.draw_piano_base(screen)
+
             pygame.display.flip()
-            # limits FPS to 60. dt is delta time in seconds since last frame, used for framerate-independent physics.
-            dt = clock.tick(60) / 1000
+
         pygame.quit()        
 
     def draw_guitar_base(self, screen: pygame.surface):
@@ -141,9 +138,24 @@ class Visualizer():
     def update_guitar(self):
         pass
 
-    def draw_piano_base(self):
-        pass
+    def draw_piano_base(self, screen):
+        for key, values in self.piano.sorted_keys.items():
+            self.draw_piano_key(screen, values['type'], values['x_pos'])
 
+    def draw_piano_key(self, screen, key_type: str, x_pos: float|int, pressed: bool = False):
+        if key_type == self.piano.w:
+            rect = pygame.draw.rect(screen, color='white' if not pressed else 'red',
+                             rect=pygame.Rect(MARGIN_X+x_pos, self.piano_margin_y, 
+                            self.piano.white_key_width, self.piano.white_key_length),
+                            border_radius=1)
+            outline = rect.inflate(2, 2)
+            pygame.draw.rect(screen, 'black', outline, 2)            
+        else:
+            pygame.draw.rect(screen, color='black' if not pressed else 'red',
+                             rect=pygame.Rect(MARGIN_X+x_pos, self.piano_margin_y, 
+                            self.piano.black_key_width, self.piano.black_key_length),
+                            border_radius=1)            
+            
     def update_piano(self):
         pass
 
