@@ -1,9 +1,8 @@
-from json import load
 import tkinter as tk
+from json import load
 import ttkbootstrap as tb
 import ttkbootstrap.constants as tb_const
 from ttkbootstrap.scrolled import ScrolledFrame
-from tkinter import ttk
 
 
 from instruments import Guitar, Piano
@@ -44,7 +43,7 @@ class App:
         }
         self.guitar.canvas.grid()        
         separator = tb.Separator(self.guitar_frame, bootstyle="default", orient='horizontal')
-        separator.grid(pady=30, sticky='we')        
+        separator.grid(pady=10, sticky='we')        
         self.guitar_frame.grid(**self.guitar_frame_grid_params)
         row += 1
         #endregion
@@ -55,20 +54,20 @@ class App:
         self.piano_frame_grid_params = {
             "row": row,
             "padx": 20,
-            "pady": 30,
+            "pady": 10,
             "sticky": "se"
         }
         row += 1
         self.piano.canvas.grid(sticky='nesw')        
         separator = tb.Separator(self.piano_frame, bootstyle="default", orient='horizontal')
-        separator.grid(pady=30, sticky='we')
+        separator.grid(pady=10, sticky='we')
         if self.settings_client.settings['show_piano_on_start']:       
             self.piano_frame.grid(**self.piano_frame_grid_params)        
         
         #endregion
 
         #region settings
-        self.settings_frame = tb.Labelframe(self.root_frame, bootstyle="primary", text=self.settings_client.strings['settings'])
+        self.settings_frame = tb.Labelframe(self.root_frame, bootstyle="info", text=self.settings_client.strings['settings'])
         self.check_state_show_guitar = tk.IntVar(value=1)
         self.check_show_guitar = tb.Checkbutton(self.settings_frame, text=self.settings_client.strings['show_guitar'],
                                                 bootstyle="default-round-toggle",
@@ -84,7 +83,7 @@ class App:
         self.check_show_piano.grid(padx=20, pady=10, row= 1)
 
         #region fret range
-        self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="secondary", text=self.settings_client.strings['fret_range'])
+        self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="default", text=self.settings_client.strings['fret_range'])
         self.label_from = tb.Label(self.fret_range_frame, text=self.settings_client.strings['from'])
         self.input_fret_from = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
                                                 values=list(range(1,constants['frets_number']+1)))
@@ -101,7 +100,7 @@ class App:
         #endregion
 
         #region root scale
-        self.scale_root_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['scale_root'], bootstyle="secondary")
+        self.scale_root_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['scale_root'], bootstyle="default")
         self.input_scale_root = tb.Combobox(self.scale_root_frame, width=7, state='readonly',
                                              values=constants['all_notes'])
         self.input_scale_root.current(0)
@@ -110,7 +109,7 @@ class App:
         #endregion 
 
         #region scale type
-        self.scale_type_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['type'], bootstyle="secondary")
+        self.scale_type_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['type'], bootstyle="default")
         self.input_scale_type = tb.Combobox(self.scale_type_frame, width=15, state='readonly',
                                              values=[self.settings_client.strings[s] for s in constants['scale_types']])
         self.input_scale_type.current(0)
@@ -120,7 +119,7 @@ class App:
 
         # ok button
         self.btn_update = tb.Button(self.settings_frame, text=self.settings_client.strings['update'], command=self.show_guitar_fretboard,
-                                    bootstyle="primary, outline", takefocus=False)
+                                    bootstyle="default", takefocus=False)
         self.btn_update.grid(row=2, column=4, padx=10, ipady=10)
 
 
@@ -128,6 +127,9 @@ class App:
         row += 1
 
         self.show_guitar_fretboard()        
+
+        btn = tb.Button(self.settings_frame, text="play test", command=self.play)
+        btn.grid(row=2, column=5, padx=10, pady=10)
         self.root.mainloop()
 
     def update_app(self):
@@ -160,11 +162,13 @@ class App:
         else:
             self.guitar_frame.grid_forget()  
 
-
     def set_piano_visibility(self):
         if self.check_state_show_piano.get():
             self.piano_frame.grid(**self.piano_frame_grid_params)  
         else:
             self.piano_frame.grid_forget()  
 
+    def play(self):
+        print('Tutaj wchodzi pygame cały na biało')
+        
 app = App()

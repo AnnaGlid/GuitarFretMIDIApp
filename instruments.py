@@ -25,6 +25,19 @@ class Guitar():
         self.POTENTIAL_STRING_LENGTH = self.FRETBOARD_LENGTH * 1.3
         self.FRET_DICT = {}
         self.STRING_DICT = {} # High E is first string, low E is 6th string
+        # !!! IMPORTANT !!!
+        ''' 
+        Updated in self.show_fretboard(). Holds information required for showing what's played through MIDI signal.
+        self.MIDI_INFO_DICT = {
+            (string number) 1: {
+                (midi value) 64 : {
+                    "fret_number": 1
+                    "interval_name": "p4"
+                } 
+            }
+        }
+        '''
+        self.MIDI_INFO_DICT = {}    
 
         self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.FRETBOARD_WIDTH+self.TEXT_MARGIN))
         distance = 0
@@ -75,7 +88,6 @@ class Guitar():
                 )
 
         for fret in range(1, self.FRETS_NUMBER+1):
-            self.FRET_DICT[fret]['notes'] = constants['all_notes_grouped']
             middle_point = (
                 (self.FRET_DICT[fret]['coords']['x0'] + self.FRET_DICT[fret-1]['coords']['x0']) / 2,
                 (self.FRET_DICT[fret]['coords']['y0'] + self.FRET_DICT[fret]['coords']['y1']) /2
@@ -112,6 +124,21 @@ class Guitar():
                                     fill=self.settings_client.settings['guitar_strings_color'], 
                                     width=int(0.5 + 0.5*string))
         
+    def get_midi_value_open_string(self, string_name: str):
+        match string_name:
+            case "E":
+                midi_val = 40
+            case "A":
+                midi_val = 45
+            case "D":
+                midi_val = 50
+            case "G":
+                midi_val = 55
+            case "B": 
+                midi_val = 59
+            case "EE":
+                midi_val = 64
+        return midi_val
 
     def show_fretboard(self, root_note, scale_type_name, first_fret, last_fret):
         self.canvas.delete('all')
@@ -125,10 +152,19 @@ class Guitar():
         for note, interval in zip(sorted_notes, constants['all_intervals']):
             assigned_intervals[str(note)] = interval
         for string in constants['guitar_strings']:
-            for fret in range(int(first_fret), int(last_fret)+1):
+            string_num = constants['guitar_strings'][string]['number']
+            self.MIDI_INFO_DICT[string_num] = {}
+            midi_val = self.get_midi_value_open_string(string)
+            for fret in range(1, constants['frets_number']+1):
+                midi_val += 1
                 note = constants['guitar_strings'][string]['frets'][fret]
                 interval = assigned_intervals[str(note)]
-                if interval in constants['scale_types'][scale_type]['intervals']:
+                self.MIDI_INFO_DICT[string_num][midi_val] = {
+                    "fret_number": fret,
+                    "interval_name": constants['all_intervals'][interval].encode('cp1252').decode()
+                }
+                if fret in range(int(first_fret), int(last_fret)+1) and \
+                        interval in constants['scale_types'][scale_type]['intervals']:
                     self.draw_interval(string, fret, interval)
 
     def draw_interval(self, string: str, fret: str, interval: str):
@@ -159,7 +195,7 @@ class Piano():
 
         self.CANVAS_WIDTH = max_width
         self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 10  # x axis, horizontal
-        self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 5 # y axis, vertical
+        self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 6 # y axis, vertical
         self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.KEYBOARD_WIDTH))
         self.OCTAVES_NUMBER = 4
         self.KEYS_PADDING_BOTTOM = 10
