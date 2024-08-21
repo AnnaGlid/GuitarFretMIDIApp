@@ -2,10 +2,6 @@ from json import load
 import tkinter as tk
 
 
-with open('config/constants.json') as f:
-    constants = load(f)
-
-
 class Guitar():
 
     def __init__(self, root, max_width, settings_client):    
@@ -63,15 +59,15 @@ class Guitar():
                 'y1': self.STRING_DISTANCE*string
             }
         
-        for string in constants['guitar_strings']:
+        for string in self.settings_client.constants['guitar_strings']:
             # determine notes on the fretboard
             open_note = 'E' if string == "EE" else string
-            note_idx = constants['all_notes_grouped'].index(
-                next(filter(lambda x: open_note in x, constants['all_notes_grouped']))
+            note_idx = self.settings_client.constants['all_notes_grouped'].index(
+                next(filter(lambda x: open_note in x, self.settings_client.constants['all_notes_grouped']))
             )
             for fret in range(self.FRETS_NUMBER+1):
-                constants['guitar_strings'][string]['frets'].append(constants['all_notes_grouped'][note_idx])
-                note_idx = note_idx + 1 if  note_idx + 1 < len(constants['all_notes_grouped']) else 0        
+                self.settings_client.constants['guitar_strings'][string]['frets'].append(self.settings_client.constants['all_notes_grouped'][note_idx])
+                note_idx = note_idx + 1 if  note_idx + 1 < len(self.settings_client.constants['all_notes_grouped']) else 0        
         self.draw_guitar()        
     
     def draw_guitar(self):
@@ -80,7 +76,7 @@ class Guitar():
         for fret in range(0, self.FRETS_NUMBER + 1):  
             self.canvas.create_line(*self.FRET_DICT[fret]['coords'].values(), 
                                     fill=self.settings_client.settings['guitar_frets_color'], width=2)
-            if fret in constants['frets_labeled']:
+            if fret in self.settings_client.constants['frets_labeled']:
                 self.canvas.create_text(
                     self.FRET_DICT[fret-1]['coords']['x0'] + (self.FRET_DICT[fret]['coords']['x0'] - self.FRET_DICT[fret-1]['coords']['x0'])/2,
                     float(self.FRETBOARD_WIDTH + self.TEXT_MARGIN/2),
@@ -143,33 +139,33 @@ class Guitar():
     def show_fretboard(self, root_note, scale_type_name, first_fret, last_fret):
         self.canvas.delete('all')
         self.draw_guitar()
-        root_note_idx = constants['all_notes_grouped'].index(
-            next(filter(lambda x: root_note in x, constants['all_notes_grouped']))
+        root_note_idx = self.settings_client.constants['all_notes_grouped'].index(
+            next(filter(lambda x: root_note in x, self.settings_client.constants['all_notes_grouped']))
         )
         scale_type = next(filter(lambda x: self.settings_client.strings[x]==scale_type_name, self.settings_client.strings))
-        sorted_notes = constants['all_notes_grouped'][root_note_idx:] + constants['all_notes_grouped'][: root_note_idx]
-        assigned_intervals = {}
-        for note, interval in zip(sorted_notes, constants['all_intervals']):
-            assigned_intervals[str(note)] = interval
-        for string in constants['guitar_strings']:
-            string_num = constants['guitar_strings'][string]['number']
+        sorted_notes = self.settings_client.constants['all_notes_grouped'][root_note_idx:] + self.settings_client.constants['all_notes_grouped'][: root_note_idx]
+        self.assigned_intervals = {}
+        for note, interval in zip(sorted_notes, self.settings_client.constants['all_intervals']):
+            self.assigned_intervals[str(note)] = interval
+        for string in self.settings_client.constants['guitar_strings']:
+            string_num = self.settings_client.constants['guitar_strings'][string]['number']
             self.MIDI_INFO_DICT[string_num] = {}
             midi_val = self.get_midi_value_open_string(string)
-            for fret in range(1, constants['frets_number']+1):
+            for fret in range(1, self.settings_client.constants['frets_number']+1):
                 midi_val += 1
-                note = constants['guitar_strings'][string]['frets'][fret]
-                interval = assigned_intervals[str(note)]
+                note = self.settings_client.constants['guitar_strings'][string]['frets'][fret]
+                interval = self.assigned_intervals[str(note)]
                 self.MIDI_INFO_DICT[string_num][midi_val] = {
                     "fret_number": fret,
-                    "interval_name": constants['all_intervals'][interval].encode('cp1252').decode()
+                    "interval_name": self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode()
                 }
                 if fret in range(int(first_fret), int(last_fret)+1) and \
-                        interval in constants['scale_types'][scale_type]['intervals']:
+                        interval in self.settings_client.constants['scale_types'][scale_type]['intervals']:
                     self.draw_interval(string, fret, interval)
 
     def draw_interval(self, string: str, fret: str, interval: str):
         r = self.settings_client.settings['interval_label_radius']
-        string_number = constants['guitar_strings'][string]['number']
+        string_number = self.settings_client.constants['guitar_strings'][string]['number']
         middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
         self.canvas.create_oval(
             middle_x - r,
@@ -183,16 +179,15 @@ class Guitar():
             middle_x,
             self.STRING_DICT[string_number]['coords']['y0'],
             font=('Aria', self.settings_client.settings['interval_font_size']),
-            text = str(constants['all_intervals'][interval].encode('cp1252').decode()),
-            fill=self.settings_client.settings['interval_color'][interval]['font'],
-            
-        )        
+            text = str(self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode()),
+            fill=self.settings_client.settings['interval_color'][interval]['font'],            
+        )
 
 
 class Piano():
 
     def __init__(self, root, max_width, settings_client):
-
+        self.settings_client = settings_client
         self.CANVAS_WIDTH = max_width
         self.KEYBOARD_LENGTH = self.CANVAS_WIDTH - self.CANVAS_WIDTH // 10  # x axis, horizontal
         self.KEYBOARD_WIDTH = self.KEYBOARD_LENGTH // 6 # y axis, vertical
@@ -214,10 +209,10 @@ class Piano():
         x_pos_white = 0
         for key_num, key in enumerate(self.all_keys):
             self.keys[key_num] = {
-                'note': constants['all_notes_grouped'][idx],
+                'note': self.settings_client.constants['all_notes_grouped'][idx],
                 'type': key
             }
-            idx = idx + 1 if idx+1 < len(constants['all_notes_grouped']) else 0
+            idx = idx + 1 if idx+1 < len(self.settings_client.constants['all_notes_grouped']) else 0
             if key == self.w:
                 self.keys[key_num]['x_pos'] = x_pos_white
                 x_pos_white = x_pos_white + self.white_key_width 

@@ -6,8 +6,6 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
 from ttkbootstrap.dialogs import Messagebox
 
-with open('config/constants.json') as f:
-    constants = load(f)
 
 class Settings:
     def __init__(self, app):
@@ -18,6 +16,8 @@ class Settings:
         with open('config/strings.json') as f:
             self.all_strings = load(f)
         self.strings = self.all_strings[self.settings['language']]
+        with open('config/constants.json') as f:
+            self.constants = load(f)        
 
     def set_color_interval(self, parameter: str):
         interval, what = parameter.split('//')
@@ -111,7 +111,7 @@ class Settings:
 
         lang_frame = tb.Labelframe(scroll_frame, text=self.strings["choose_language"])
         self.lang_combobox = tb.Combobox(lang_frame, width=20, state='readonly',
-                        values=[self.strings[lang] for lang in constants['available_languages']])
+                        values=[self.strings[lang] for lang in self.constants['available_languages']])
         self.lang_combobox.set(self.strings[self.settings['language']])
         self.lang_combobox.grid(padx=padx, pady=pady)
         lang_frame.grid(padx=padx, pady=pady, row=window_row)
@@ -149,7 +149,7 @@ class Settings:
         self.interval_widgets_dict = {}
         for interval, colors in self.settings['interval_color'].items():
             tb.Label(intervals_frame, 
-                     text=constants['all_intervals'][interval].encode('cp1252').decode()
+                     text=self.constants['all_intervals'][interval].encode('cp1252').decode()
                      ).grid(row=row, column=0, padx=padx, pady=pady)
             self.interval_widgets_dict[interval] = {'bg': {}, 'font':{}}
             self.interval_widgets_dict[interval]['frame1'] = tb.Frame(intervals_frame, bootstyle='dark')

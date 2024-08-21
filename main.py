@@ -5,11 +5,10 @@ import ttkbootstrap.constants as tb_const
 from ttkbootstrap.scrolled import ScrolledFrame
 
 
-from instruments import Guitar, Piano
 from settings import Settings
+from playandshow import Visualizer
+from instruments import Guitar, Piano
 
-with open('config/constants.json') as f:
-    constants = load(f)
 
 class App:
     def __init__(self):
@@ -86,12 +85,12 @@ class App:
         self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="default", text=self.settings_client.strings['fret_range'])
         self.label_from = tb.Label(self.fret_range_frame, text=self.settings_client.strings['from'])
         self.input_fret_from = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
-                                                values=list(range(1,constants['frets_number']+1)))
+                                                values=list(range(1,self.settings_client.constants['frets_number']+1)))
         self.input_fret_from.current(0)
         self.label_to = tb.Label(self.fret_range_frame, text=self.settings_client.strings['to'])
         self.input_fret_to = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
-                                                values=list(range(1,constants['frets_number']+1)))
-        self.input_fret_to.current(constants['frets_number']-1)
+                                                values=list(range(1,self.settings_client.constants['frets_number']+1)))
+        self.input_fret_to.current(self.settings_client.constants['frets_number']-1)
         self.label_from.grid(column=0, row=0, padx=10)
         self.input_fret_from.grid(column=1, row=0, pady= 10, padx=5)
         self.label_to.grid(column=2, row=0, padx=5)
@@ -102,7 +101,7 @@ class App:
         #region root scale
         self.scale_root_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['scale_root'], bootstyle="default")
         self.input_scale_root = tb.Combobox(self.scale_root_frame, width=7, state='readonly',
-                                             values=constants['all_notes'])
+                                             values=self.settings_client.constants['all_notes'])
         self.input_scale_root.current(0)
         self.input_scale_root.grid(pady=10, padx=20)
         self.scale_root_frame.grid(row=2, column=2, padx=10, pady=20)
@@ -111,7 +110,7 @@ class App:
         #region scale type
         self.scale_type_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['type'], bootstyle="default")
         self.input_scale_type = tb.Combobox(self.scale_type_frame, width=15, state='readonly',
-                                             values=[self.settings_client.strings[s] for s in constants['scale_types']])
+                                             values=[self.settings_client.strings[s] for s in self.settings_client.constants['scale_types']])
         self.input_scale_type.current(0)
         self.input_scale_type.grid(pady=10, padx=30)
         self.scale_type_frame.grid(row=2, column=3, padx=20, pady=20)
@@ -147,7 +146,7 @@ class App:
         self.scale_type_frame.configure(text=self.settings_client.strings['type'])
         if self.input_scale_type.get() not in self.settings_client.strings.values():
             # language did change
-            self.input_scale_type.configure(values=[self.settings_client.strings[s] for s in constants['scale_types']])
+            self.input_scale_type.configure(values=[self.settings_client.strings[s] for s in self.settings_client.constants['scale_types']])
             self.input_scale_type.current(0)        
         self.btn_update.configure(text=self.settings_client.strings['update'])
         self.show_guitar_fretboard()
@@ -169,6 +168,15 @@ class App:
             self.piano_frame.grid_forget()  
 
     def play(self):
-        print('Tutaj wchodzi pygame cały na biało')
-        
+        vis = Visualizer(settings_client=self.settings_client,
+                         size=self.root.maxsize(),
+                         show_guitar=self.check_state_show_guitar.get(),
+                         show_piano=self.check_state_show_piano.get(),
+                         guitar = self.guitar,
+                         piano = self.piano,
+                         first_fret = self.input_fret_from.get(),
+                         last_fret = self.input_fret_to.get(),
+                         scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings))
+                         )
+
 app = App()
