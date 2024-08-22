@@ -46,9 +46,11 @@ class Guitar():
                 'x1': distance,
                 'y1': self.FRETBOARD_WIDTH
             }            
+            if fret > 0:
+                self.FRET_DICT[fret]['middle_x'] = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2        
             scaling_factor = location / 17.817    # http://www.buildyourguitar.com/resources/tips/fretdist.htm
             distance = distance + scaling_factor            
-
+        self.FRET_DICT[0]['middle_x'] = self.FRET_DICT[1]['coords']['x0'] / 2
         for string in range(1, self.STRING_NUMBER+1):
             # first string is high E
             self.STRING_DICT[string] = {}
@@ -194,6 +196,12 @@ class Piano():
         self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.KEYBOARD_WIDTH))
         self.OCTAVES_NUMBER = 4
         self.KEYS_PADDING_BOTTOM = 10
+        self.MIDI_INFO_DICT = {}
+        '''
+        self.MIDI_INFO_DICT = {
+            (midi value) 64 : (key_number} 15
+        }
+        '''        
 
         self.white_key_width = self.KEYBOARD_LENGTH / (self.OCTAVES_NUMBER*7) # x axis, horizontal
         self.white_key_length = self.KEYBOARD_WIDTH - self.KEYS_PADDING_BOTTOM # y axis, vertical
@@ -207,19 +215,31 @@ class Piano():
         self.keys = {}
         idx = 4 # starting from E
         x_pos_white = 0
+        midi_val = 40 # E2
         for key_num, key in enumerate(self.all_keys):
             self.keys[key_num] = {
                 'note': self.settings_client.constants['all_notes_grouped'][idx],
-                'type': key
+                'type': key,
+                'midi_val': midi_val,
+                'left_black': True if key_num > 1 and self.all_keys[key_num-1] == self.b else False,
+                'right_black': True if key_num < len(self.all_keys)-1 and self.all_keys[key_num+1] == self.b else False
             }
+            self.MIDI_INFO_DICT[midi_val] = key_num
+            midi_val += 1
             idx = idx + 1 if idx+1 < len(self.settings_client.constants['all_notes_grouped']) else 0
             if key == self.w:
                 self.keys[key_num]['x_pos'] = x_pos_white
                 x_pos_white = x_pos_white + self.white_key_width 
             else:
                 self.keys[key_num]['x_pos'] = x_pos_white - (self.black_key_width / 2)
-                
+
         self.sorted_keys = dict(sorted(self.keys.items(), key=lambda item: item[1]['type'], reverse=True))
+        for out_of_range_key in [-1, len(self.keys)]:
+            # useful while updating in Visualizer
+            self.keys[out_of_range_key] =  {
+                'left_black': False,
+                'right_black': False
+            }
         self.draw_piano()
 
     def draw_key(self, key_type: str, x_pos: float|int):

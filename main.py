@@ -16,6 +16,7 @@ class App:
         self.settings_client = Settings(self)
         theme = 'darkly' if self.settings_client.settings['dark_theme'] else 'cosmo'
         self.root = tb.Window(themename=theme)
+        
         self.root.iconbitmap('data/seeMidi.ico')
         self.root.title("See MIDI")
         self.root.geometry('{}x{}'.format(*self.root.maxsize()))
@@ -129,7 +130,7 @@ class App:
         row += 1
         self.show_guitar_fretboard()        
 
-        self.check_state_play_demo= tk.IntVar(value=0)
+        self.check_state_play_demo= tk.IntVar(value=1)
         self.check_play_demo = tb.Checkbutton(self.root_frame, text='demo?', 
                                                bootstyle="default-round-toggle",
                                                variable=self.check_state_play_demo)
@@ -180,10 +181,10 @@ class App:
                          show_piano=self.check_state_show_piano.get(),
                          guitar = self.guitar,
                          piano = self.piano,
-                         first_fret = self.input_fret_from.get(),
-                         last_fret = self.input_fret_to.get(),
+                         first_fret = int(self.input_fret_from.get()),
+                         last_fret = int(self.input_fret_to.get()),
                          scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                         play_demo = 1 # DEBUG  self.check_state_play_demo
+                         play_demo = self.check_state_play_demo
                          )
 
 app = App()
