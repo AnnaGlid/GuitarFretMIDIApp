@@ -239,7 +239,8 @@ class Visualizer():
     def run_demo(self, screen, fill_color):
         clock = pygame.time.Clock()        
         dt = 0
-        midi_filename = 'bbcc.mid'
+        midi_filename = 'Everything.mid'
+        string_number = 3
         mid = mido.MidiFile(midi_filename)
         signals = mid.play(meta_messages=True)
         screen.fill(fill_color)
@@ -250,12 +251,13 @@ class Visualizer():
         running = True
         pygame.mixer.music.load(midi_filename)
         pygame.mixer.music.play()
-        string_number = 3
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
             if signal := next(signals, None):
+                print(signal)
+
                 if signal.type == 'note_on':                    
                     in_guitar_range = False if signal.note not in self.guitar.MIDI_INFO_DICT[string_number] else True
                     if in_guitar_range:
@@ -285,10 +287,19 @@ class Visualizer():
                             self.piano_keys_to_show.remove(key_number)
                         except:
                             pass # try-except for time optimization
-                        self.draw_overlapping_piano_keys(screen, key_number)                        
+                        self.draw_overlapping_piano_keys(screen, key_number)
                     pygame.display.flip()                        
-                # elif signal.type == 'note_off':
-                #     erase_note = (fret_number, interval, string_number)
-                #     self.update_guitar(screen, erase_note)
-                #     pygame.display.flip()
+                elif signal.type == 'note_off':
+                    if in_guitar_range:
+                        erase_note = (fret_number, interval, string_number)
+                        self.erase_and_update_guitar(screen, erase_note)
+                    self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
+                                        self.piano.keys[key_number]['x_pos'],
+                                        pressed=False)
+                    try:
+                        self.piano_keys_to_show.remove(key_number)
+                    except:
+                        pass # try-except for time optimization
+                    self.draw_overlapping_piano_keys(screen, key_number)
+                    pygame.display.flip()
         pygame.quit()        

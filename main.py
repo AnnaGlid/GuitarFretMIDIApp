@@ -16,7 +16,7 @@ class App:
         self.settings_client = Settings(self)
         theme = 'darkly' if self.settings_client.settings['dark_theme'] else 'cosmo'
         self.root = tb.Window(themename=theme)
-        
+
         self.root.iconbitmap('data/seeMidi.ico')
         self.root.title("See MIDI")
         self.root.geometry('{}x{}'.format(*self.root.maxsize()))
@@ -184,7 +184,7 @@ class App:
                          first_fret = int(self.input_fret_from.get()),
                          last_fret = int(self.input_fret_to.get()),
                          scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                         play_demo = self.check_state_play_demo
+                         play_demo = self.check_state_play_demo.get()
                          )
 
 app = App()
