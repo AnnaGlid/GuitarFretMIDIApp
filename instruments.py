@@ -238,7 +238,8 @@ class Piano():
             # useful while updating in Visualizer
             self.keys[out_of_range_key] =  {
                 'left_black': False,
-                'right_black': False
+                'right_black': False,
+                'type': self.w
             }
         self.draw_piano()
 
