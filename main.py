@@ -184,7 +184,8 @@ class App:
                          first_fret = int(self.input_fret_from.get()),
                          last_fret = int(self.input_fret_to.get()),
                          scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                         play_demo = self.check_state_play_demo.get()
+                         play_demo = self.check_state_play_demo.get(),
+                         max_bend = self.guitar.STRING_DISTANCE
                          )
 
 app = App()
