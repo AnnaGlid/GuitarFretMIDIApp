@@ -1,5 +1,6 @@
 import pygame
 import mido
+import time # debug
 
 MARGIN_X = 40
 MARGIN_Y = 80
@@ -19,13 +20,26 @@ class Visualizer():
         self.show_piano = show_piano
         self.play_demo = play_demo
         self.MAX_BEND = max_bend
+        self.MAX_PITCH_SHIFT = 2730
+        self.BEND_PER_1_PITCH = self.MAX_BEND / self.MAX_PITCH_SHIFT
         self.intervals = self.settings_client.constants['scale_types'][scale_type]['intervals']
-        self.guitar_notes_to_show = []
+        self.guitar_notes_to_show = {}
+        '''
+        {(string number) 1:{
+            "fret": 5,
+            "interval": "p4",
+            "bend": 2730
+            }
+        }
+        '''
         self.piano_keys_to_show = []
         self.guitar_intervals_to_cover_up = []
         self.LABELED_FRET_TEXT_Y = float(self.guitar.FRETBOARD_WIDTH + self.guitar.TEXT_MARGIN/2)
         self.MIDDLE_FRET_Y = self.guitar.FRETBOARD_WIDTH / 2
-        self.GUITAR_STRING_WIDTH_DICT = {string: int(0.5 + 0.5*string) for string in range(1,7)}
+        self.START_STRING_X = self.guitar.STRING_DICT[1]['coords']['x0'] + MARGIN_X
+        self.END_STRING_X = self.guitar.STRING_DICT[1]['coords']['x1'] + MARGIN_X
+
+        self.GUITAR_STRING_WIDTH_DICT = {string: int(0.5 + 0.5*string) for string in range(1,7)}        
         self.INTERVALS_TO_SHOW = []
         for string in self.settings_client.constants['guitar_strings']:
             string_number = self.settings_client.constants['guitar_strings'][string]['number']
@@ -149,21 +163,40 @@ class Visualizer():
 
     def draw_guitar_strings(self, screen):
         for string in range(1, self.guitar.STRING_NUMBER+1):
-            pygame.draw.line(screen, self.settings_client.settings['guitar_strings_color'], 
-                             (self.guitar.STRING_DICT[string]['coords']['x0'] + MARGIN_X, self.guitar.STRING_DICT[string]['coords']['y0'] + MARGIN_Y),
-                             (self.guitar.STRING_DICT[string]['coords']['x1'] + MARGIN_X, self.guitar.STRING_DICT[string]['coords']['y1'] + MARGIN_Y),
-                             width=self.GUITAR_STRING_WIDTH_DICT[string])    
+            string_y = self.guitar.STRING_DICT[string]['coords']['y0'] + MARGIN_Y
+            if bend_val := self.guitar_notes_to_show.get(string,{}).get('bend'):
+                # last string bends in other direction
+                bend_y = self.BEND_PER_1_PITCH * bend_val + string_y * (-1 if string==6 else 1)
+                bend_x = self.guitar.FRET_DICT[self.guitar_notes_to_show.get(string,{}).get('fret')]['middle_x']
+                pygame.draw.line(screen, self.settings_client.settings['guitar_strings_color'], 
+                                (self.START_STRING_X, string_y),
+                                (bend_x, bend_y),
+                                width=self.GUITAR_STRING_WIDTH_DICT[string])
+                pygame.draw.line(screen, self.settings_client.settings['guitar_strings_color'], 
+                                (bend_x, bend_y),
+                                (self.END_STRING_X, string_y),
+                                width=self.GUITAR_STRING_WIDTH_DICT[string])              
+            else:
+                pygame.draw.line(screen, self.settings_client.settings['guitar_strings_color'], 
+                                (self.START_STRING_X, string_y),
+                                (self.END_STRING_X, string_y),
+                                width=self.GUITAR_STRING_WIDTH_DICT[string])
 
     def show_fretboard(self, screen):
         for fret, interval, string in self.INTERVALS_TO_SHOW:
             self.draw_interval(screen, fret, interval, string)
 
-    def draw_interval(self, screen, fret: str, interval: str, 
+    def draw_interval(self, screen, fret: int, interval: str, 
                       string_number:int|None=None, is_played: bool=False):
         color = self.settings_client.settings['interval_color'][interval]['bg'] if not is_played else 'red'
         middle_x = MARGIN_X + self.guitar.FRET_DICT[fret]['middle_x']
+        interval_y = MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']        
+        if self.guitar_notes_to_show.get(string_number,{}).get('bend') and \
+            self.guitar_notes_to_show.get(string_number,{}).get('fret') == fret:
+            interval_y += self.BEND_PER_1_PITCH * self.guitar_notes_to_show.get(string_number,{}).get('bend')
+            
         pygame.draw.circle(screen, color,
-                           (middle_x, MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']),
+                           (middle_x, interval_y),
                            radius=self.settings_client.settings['interval_label_radius'])
         
         if fret in self.fret_range and interval in self.intervals:
@@ -171,17 +204,14 @@ class Visualizer():
                 self.settings_client.constants['all_intervals'][interval].encode('cp1252').decode().replace('♭','b'), 
                     False, self.settings_client.settings['interval_color'][interval]['font'])
             surface_rect = surface.get_rect()
-            surface_rect.center = (
-                    middle_x,
-                    MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']
-            )
+            surface_rect.center = (middle_x, interval_y)
             screen.blit(surface, surface_rect)        
 
     def update_info_on_guitar(self, erase_note: tuple) -> bool:
         ''' Returns info if whole guitar should be re-drawn'''
         # note info: (fret_number, interval, string_number)
         try:
-            self.guitar_notes_to_show.remove(erase_note)        
+            del self.guitar_notes_to_show[erase_note[2]]     
         except:
             pass # well, it happend, just let it go. It was never that serious. - time optimalization
         if erase_note[1] in self.intervals and erase_note[0] in self.fret_range:
@@ -200,9 +230,9 @@ class Visualizer():
             for note in self.guitar_intervals_to_cover_up:
                 self.draw_interval(screen, fret=note[0],
                                     interval=note[1], string_number=note[2], is_played=False)   
-        for note in self.guitar_notes_to_show:
-            self.draw_interval(screen, fret=note[0],
-                                interval=note[1], string_number=note[2], is_played=True)                             
+        for string_num, note in self.guitar_notes_to_show.items():
+            self.draw_interval(screen, fret=note['fret'],
+                                interval=note['interval'], string_number=string_num, is_played=True)                             
 
     def draw_piano_base(self, screen):
         for key, values in self.piano.sorted_keys.items():
@@ -249,8 +279,8 @@ class Visualizer():
         pygame.quit()      
 
     def run_demo(self, screen, fill_color):
-        midi_filename = 'Everything.mid'
-        chosen_string_num = 1
+        midi_filename = 'Bends.mid'
+        chosen_string_num = 2
         mid = mido.MidiFile(midi_filename)
         signals = mid.play(meta_messages=True)
         screen.fill(fill_color)
@@ -277,9 +307,9 @@ class Visualizer():
                         # not checking if note is in guitar string range - optimalization + I trust the player <3
                         erase_note = None # or tuple: (fret_number, interval, string_number, pitch bend)             
                         fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
-                        interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']                    
+                        interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']
                         if signal.velocity > 0:
-                            self.guitar_notes_to_show.append((fret_number, interval, string_number))                      
+                            self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval}
                             self.piano_keys_to_show.append(key_number)
                             self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
                                                 self.piano.keys[key_number]['x_pos'],
@@ -298,6 +328,8 @@ class Visualizer():
                             self.draw_overlapping_piano_keys(screen, key_number)
                         update_screen = True                  
                     elif signal.type == 'note_off':
+                        fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
+                        interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']                        
                         erase_note = (fret_number, interval, string_number)
                         to_redraw = self.update_info_on_guitar(erase_note)
                         self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
@@ -307,7 +339,18 @@ class Visualizer():
                             self.piano_keys_to_show.remove(key_number)
                         except:
                             pass # try-except for time optimization
+                        self.draw_overlapping_piano_keys(screen, key_number)                        
                         update_screen = True
+                    elif signal.type == 'pitchwheel':
+                        if note := self.guitar_notes_to_show.get(string_number):
+                            fret_number = note['fret']
+                            interval = note['interval']
+                            if signal.pitch == 0:
+                                self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval}
+                            else:
+                                self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'bend': signal.pitch}                        
+                            update_screen = True
+                            to_redraw = True
             if update_screen:
                 self.update_guitar(screen, to_redraw)                
                 pygame.display.flip()
