@@ -103,15 +103,23 @@ class Visualizer():
         clock = pygame.time.Clock()        
         dt = 0
         running = True
+        inport = mido.open_input()
+        screen.fill(fill_color)
+        self.draw_guitar_base(screen)
+        self.draw_guitar_strings(screen)
+        self.show_fretboard(screen)      
+        print(f'[START] {mido.get_input_names()}')  
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+            msg = inport.receive()
+            print(msg)
 
-            screen.fill(fill_color)
-            self.draw_guitar_base(screen)
-            self.draw_guitar_strings(screen)
-            self.show_fretboard(screen)
+            # screen.fill(fill_color)
+            # self.draw_guitar_base(screen)
+            # self.draw_guitar_strings(screen)
+            # self.show_fretboard(screen)
 
             pygame.display.flip()
         pygame.quit()        
@@ -279,10 +287,24 @@ class Visualizer():
         pygame.quit()      
 
     def run_demo(self, screen, fill_color):
-        midi_filename = 'midis/string6.mid'
-        chosen_string_num = 6
-        mid = mido.MidiFile(midi_filename)
-        signals = mid.play(meta_messages=True)
+        # midi_filename = 'midis/bbcc.mid'
+        # chosen_string_num = 3
+
+        # midi_filename = 'midis/Bends.mid'
+        chosen_string_num = 1
+
+        # mid = mido.MidiFile(midi_filename).play()
+        # signals = mid.play(meta_messages=False)
+        # signals_list = [
+        #     None,
+        #     mido.MidiFile(midi_filename).play(),
+        #     mido.MidiFile(midi_filename).play(),
+        #     mido.MidiFile('midis/string3.mid').play(),
+        #     mido.MidiFile('midis/string4.mid').play(),
+        #     mido.MidiFile('midis/string5.mid').play(),
+        #     # mido.MidiFile('midis/string6.mid').play()
+        # ]
+        inport = mido.open_input()
         screen.fill(fill_color)
         self.draw_guitar_base(screen)
         self.draw_guitar_strings(screen)
@@ -290,8 +312,8 @@ class Visualizer():
         self.draw_piano_base(screen)       
         pygame.display.flip()        
         running = True
-        pygame.mixer.music.load(midi_filename)
-        pygame.mixer.music.play()
+        # pygame.mixer.music.load(midi_filename)
+        # pygame.mixer.music.play()
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -299,7 +321,10 @@ class Visualizer():
             update_screen = False
             to_redraw = False
             for string_number in range(chosen_string_num, chosen_string_num+1): # just for imagination
-                if signal := next(signals, None):
+                # if signal := next(signals_list[string_number], None):
+                # if signal := next(mid, None):
+                if signal := inport.receive():
+                    # print(f'{string_number}:\t\t{signal}')
                     print(signal)
 
                     if signal.type == 'note_on':                    
