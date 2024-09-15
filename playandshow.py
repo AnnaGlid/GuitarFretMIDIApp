@@ -205,7 +205,7 @@ class Visualizer():
         interval_y = MARGIN_Y + self.guitar.STRING_DICT[string_number]['coords']['y0']        
         if self.guitar_notes_to_show.get(string_number,{}).get('bend') and \
             self.guitar_notes_to_show.get(string_number,{}).get('fret') == fret:
-            interval_y += self.BEND_PER_1_PITCH * self.guitar_notes_to_show.get(string_number,{}).get('bend')
+            interval_y += self.BEND_PER_1_PITCH * self.guitar_notes_to_show.get(string_number,{}).get('bend') * (-1 if string_number == 6 else 1)
             
         pygame.draw.circle(screen, color,
                            (middle_x, interval_y),
