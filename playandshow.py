@@ -142,8 +142,12 @@ class Visualizer():
     def draw_guitar_base(self, screen: pygame.surface):
         pygame.draw.rect(screen, self.settings_client.settings['guitar_neck_color'], 
                          pygame.Rect(MARGIN_X, MARGIN_Y, self.guitar.FRETBOARD_LENGTH, self.guitar.FRETBOARD_WIDTH))
-
-        for fret in range(0, self.guitar.FRETS_NUMBER + 1):
+        fret = 0
+        pygame.draw.line(screen, self.settings_client.settings['fret_zero_color'], 
+                            (self.guitar.FRET_DICT[fret]['coords']['x0'] + MARGIN_X, self.guitar.FRET_DICT[fret]['coords']['y0'] + MARGIN_Y),
+                            (self.guitar.FRET_DICT[fret]['coords']['x1'] + MARGIN_X, self.guitar.FRET_DICT[fret]['coords']['y1'] + MARGIN_Y),
+                            width=10)    
+        for fret in range(1, self.guitar.FRETS_NUMBER + 1):
             pygame.draw.line(screen, self.settings_client.settings['guitar_frets_color'], 
                              (self.guitar.FRET_DICT[fret]['coords']['x0'] + MARGIN_X, self.guitar.FRET_DICT[fret]['coords']['y0'] + MARGIN_Y),
                              (self.guitar.FRET_DICT[fret]['coords']['x1'] + MARGIN_X, self.guitar.FRET_DICT[fret]['coords']['y1'] + MARGIN_Y),

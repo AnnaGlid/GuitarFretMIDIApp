@@ -1,4 +1,4 @@
-from json import load, dump
+from json import load, dump, dumps, loads
 import tkinter as tk
 import ttkbootstrap as tb
 import ttkbootstrap.constants as tb_const
@@ -86,9 +86,18 @@ class Settings:
             with open('config/default_strings.json') as f:
                 self.all_strings = load(f)
             self.strings = self.all_strings[self.settings['language']]            
+            with open(self.SETTINGS_PATH) as f:
+                current_settings_json = load(f)
             with open(self.SETTINGS_PATH, 'w') as f:
-                dump(self.settings, f)            
-            self.app.update_app()
+                dump(self.settings, f)
+            try:
+                self.app.update_app()
+            except Exception as ex:
+                print(f'Cannot open app after reverting to default, exception: {ex}. Restoring previous settings.')
+                with open(self.SETTINGS_PATH, 'w') as f:
+                    dump(current_settings_json, f)
+                self.settings = current_settings_json
+                self.app.update_app()
 
     def open(self):
         padx = 10
@@ -176,7 +185,8 @@ class Settings:
         guitar_color_frame = tb.Labelframe(scroll_frame, text=self.strings['guitar_colors'])
         self.guitar_colors = {}
         row = 0
-        for element in ["guitar_neck_color", "guitar_dots_color", "guitar_frets_color", "guitar_strings_color"]:
+        for element in ["guitar_neck_color", "guitar_dots_color", "guitar_frets_color", 
+                        "guitar_strings_color", "fret_zero_color"]:
             self.guitar_colors[element] = {}
             tb.Label(guitar_color_frame, text=self.strings[element]).grid(padx=padx, pady=pady, row=row, column=0)
             self.guitar_colors[element]['frame'] = tb.Frame(guitar_color_frame, bootstyle='dark')

@@ -14,6 +14,7 @@ class Guitar():
         self.FRETS_NUMBER = 24
         self.ONE_DOT_FRETS = [3, 5, 7, 9, 15, 17, 19, 21]
         self.TWO_DOT_FRETS = [12, 24]
+        self.OPEN_STRING_DISTANCE = 50
         self.DOT_SIZE = self.FRETBOARD_LENGTH / 24 / 7
         self.STRING_DISTANCE = self.FRETBOARD_WIDTH / (self.STRING_NUMBER + 1)
         self.TEXT_MARGIN = self.FRETBOARD_WIDTH / 10  # how much place under the fretboard for fret labels (numbers)
@@ -36,7 +37,7 @@ class Guitar():
         self.MIDI_INFO_DICT = {}    
 
         self.canvas = tk.Canvas(root, width=int(self.CANVAS_WIDTH), height=int(self.FRETBOARD_WIDTH+self.TEXT_MARGIN))
-        distance = 0
+        distance = self.OPEN_STRING_DISTANCE
         for fret in range(0, self.FRETS_NUMBER + 1):
             location = self.POTENTIAL_STRING_LENGTH - distance
             self.FRET_DICT[fret] = {}
@@ -47,7 +48,9 @@ class Guitar():
                 'y1': self.FRETBOARD_WIDTH
             }            
             if fret > 0:
-                self.FRET_DICT[fret]['middle_x'] = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2        
+                self.FRET_DICT[fret]['middle_x'] = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
+            else:
+                self.FRET_DICT[fret]['middle_x'] = self.OPEN_STRING_DISTANCE / 2
             scaling_factor = location / 17.817    # http://www.buildyourguitar.com/resources/tips/fretdist.htm
             distance = distance + scaling_factor            
         self.FRET_DICT[0]['middle_x'] = self.FRET_DICT[1]['coords']['x0'] / 2
@@ -75,7 +78,10 @@ class Guitar():
     def draw_guitar(self):
         self.canvas.create_rectangle(0, 0, self.FRETBOARD_LENGTH, self.FRETBOARD_WIDTH,  
                 outline=self.settings_client.settings['guitar_neck_color'], fill=self.settings_client.settings['guitar_neck_color'])
-        for fret in range(0, self.FRETS_NUMBER + 1):  
+        # fret 0 - open string
+        self.canvas.create_line(*self.FRET_DICT[0]['coords'].values(), 
+                                fill=self.settings_client.settings['fret_zero_color'], width=9)        
+        for fret in range(1, self.FRETS_NUMBER + 1):
             self.canvas.create_line(*self.FRET_DICT[fret]['coords'].values(), 
                                     fill=self.settings_client.settings['guitar_frets_color'], width=2)
             if fret in self.settings_client.constants['frets_labeled']:
@@ -153,7 +159,7 @@ class Guitar():
             string_num = self.settings_client.constants['guitar_strings'][string]['number']
             self.MIDI_INFO_DICT[string_num] = {}
             midi_val = self.get_midi_value_open_string(string)
-            for fret in range(1, self.settings_client.constants['frets_number']+1):
+            for fret in range(0, self.settings_client.constants['frets_number']+1):
                 midi_val += 1
                 note = self.settings_client.constants['guitar_strings'][string]['frets'][fret]
                 interval = self.assigned_intervals[str(note)]
@@ -168,7 +174,10 @@ class Guitar():
     def draw_interval(self, string: str, fret: str, interval: str):
         r = self.settings_client.settings['interval_label_radius']
         string_number = self.settings_client.constants['guitar_strings'][string]['number']
-        middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
+        if fret > 0:
+            middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
+        else:
+            middle_x = self.OPEN_STRING_DISTANCE / 2
         self.canvas.create_oval(
             middle_x - r,
             self.STRING_DICT[string_number]['coords']['y0'] - r,

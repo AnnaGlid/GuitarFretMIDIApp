@@ -86,12 +86,12 @@ class App:
         self.fret_range_frame = tb.Labelframe(self.settings_frame, bootstyle="default", text=self.settings_client.strings['fret_range'])
         self.label_from = tb.Label(self.fret_range_frame, text=self.settings_client.strings['from'])
         self.input_fret_from = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
-                                                values=list(range(1,self.settings_client.constants['frets_number']+1)))
+                                                values=list(range(0,self.settings_client.constants['frets_number']+1)))
         self.input_fret_from.current(0)
         self.label_to = tb.Label(self.fret_range_frame, text=self.settings_client.strings['to'])
         self.input_fret_to = tb.Combobox(self.fret_range_frame, width=5, state='readonly',
-                                                values=list(range(1,self.settings_client.constants['frets_number']+1)))
-        self.input_fret_to.current(self.settings_client.constants['frets_number']-1)
+                                                values=list(range(0,self.settings_client.constants['frets_number']+1)))
+        self.input_fret_to.current(self.settings_client.constants['frets_number'])
         self.label_from.grid(column=0, row=0, padx=10)
         self.input_fret_from.grid(column=1, row=0, pady= 10, padx=5)
         self.label_to.grid(column=2, row=0, padx=5)
