@@ -1,1 +1,61 @@
-{"language": "eng", "interval_label_radius": 18, "show_piano_on_start": 1, "guitar_neck_color": "#C0994B", "guitar_dots_color": "#FFF0C9", "guitar_frets_color": "#EFD99D", "guitar_strings_color": "#373737", "dark_theme": 0, "interval_font_size": 13, "interval_color": {"R": {"bg": "#bf0404", "font": "#ffffff"}, "b2": {"bg": "#19e680", "font": "#000000"}, "d2": {"bg": "#000000", "font": "#ffffff"}, "b3": {"bg": "#01420d", "font": "#ffffff"}, "d3": {"bg": "#bb44bb", "font": "#ffffff"}, "p4": {"bg": "#ffffff", "font": "#000000"}, "b5": {"bg": "#a6a307", "font": "#ffffff"}, "p5": {"bg": "#f7f574", "font": "#000000"}, "b6": {"bg": "#ffffff", "font": "#000000"}, "d6": {"bg": "#ffffff", "font": "#000000"}, "b7": {"bg": "#431185", "font": "#ffffff"}, "d7": {"bg": "#a473e6", "font": "#000000"}}}
+{
+    "language": "eng",
+    "interval_label_radius": 18,
+    "show_piano_on_start": 1,
+    "guitar_neck_color": "#C0994B",
+    "guitar_dots_color": "#FFF0C9",
+    "guitar_frets_color": "#EFD99D",
+    "guitar_strings_color": "#373737",
+    "dark_theme": 1,
+    "interval_font_size": 13,
+    "interval_color": {
+        "R": {
+            "bg": "#bf0404",
+            "font": "#ffffff"
+        },
+        "b2": {
+            "bg": "#19e680",
+            "font": "#000000"
+        },
+        "d2": {
+            "bg": "#000000",
+            "font": "#ffffff"
+        },
+        "b3": {
+            "bg": "#01420d",
+            "font": "#ffffff"
+        },
+        "d3": {
+            "bg": "#bb44bb",
+            "font": "#ffffff"
+        },
+        "p4": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        },
+        "b5": {
+            "bg": "#a6a307",
+            "font": "#ffffff"
+        },
+        "p5": {
+            "bg": "#f7f574",
+            "font": "#000000"
+        },
+        "b6": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        },
+        "d6": {
+            "bg": "#ffffff",
+            "font": "#000000"
+        },
+        "b7": {
+            "bg": "#431185",
+            "font": "#ffffff"
+        },
+        "d7": {
+            "bg": "#a473e6",
+            "font": "#000000"
+        }
+    }
+}
