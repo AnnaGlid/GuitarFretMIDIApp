@@ -322,12 +322,13 @@ class Visualizer():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    inport.close()
+                    break
             update_screen = False
             to_redraw = False
             # if signal := next(signals_list[string_number], None):
             # if signal := next(mid, None):
-            if signal := inport.receive():
-                # print(f'{string_number}:\t\t{signal}')
+            for signal in inport.iter_pending():
                 print(signal)                
                 if signal.channel < 0 or signal.channel > 5:
                     continue
