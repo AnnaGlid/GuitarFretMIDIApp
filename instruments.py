@@ -53,7 +53,6 @@ class Guitar():
                 self.FRET_DICT[fret]['middle_x'] = self.OPEN_STRING_DISTANCE / 2
             scaling_factor = location / 17.817    # http://www.buildyourguitar.com/resources/tips/fretdist.htm
             distance = distance + scaling_factor            
-        self.FRET_DICT[0]['middle_x'] = self.FRET_DICT[1]['coords']['x0'] / 2
         for string in range(1, self.STRING_NUMBER+1):
             # first string is high E
             self.STRING_DICT[string] = {}
@@ -174,10 +173,7 @@ class Guitar():
     def draw_interval(self, string: str, fret: str, interval: str):
         r = self.settings_client.settings['interval_label_radius']
         string_number = self.settings_client.constants['guitar_strings'][string]['number']
-        if fret > 0:
-            middle_x = (self.FRET_DICT[fret-1]['coords']['x0'] + self.FRET_DICT[fret]['coords']['x0']) / 2
-        else:
-            middle_x = self.OPEN_STRING_DISTANCE / 2
+        middle_x = self.FRET_DICT[fret]['middle_x']
         self.canvas.create_oval(
             middle_x - r,
             self.STRING_DICT[string_number]['coords']['y0'] - r,
@@ -225,6 +221,8 @@ class Piano():
         idx = 4 # starting from E
         x_pos_white = 0
         midi_val = 40 # E2
+        self.BLACK_KEYS_NBRS = []
+        self.WHITE_KEYS_NBRS = []
         for key_num, key in enumerate(self.all_keys):
             self.keys[key_num] = {
                 'note': self.settings_client.constants['all_notes_grouped'][idx],
@@ -239,7 +237,9 @@ class Piano():
             if key == self.w:
                 self.keys[key_num]['x_pos'] = x_pos_white
                 x_pos_white = x_pos_white + self.white_key_width 
+                self.WHITE_KEYS_NBRS.append(key_num)
             else:
+                self.BLACK_KEYS_NBRS.append(key_num)
                 self.keys[key_num]['x_pos'] = x_pos_white - (self.black_key_width / 2)
 
         self.sorted_keys = dict(sorted(self.keys.items(), key=lambda item: item[1]['type'], reverse=True))
