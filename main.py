@@ -129,13 +129,6 @@ class App:
         self.settings_frame.grid(row=row, sticky='news', padx=20, pady=10)
         row += 1
         self.show_guitar_fretboard()        
-
-        self.check_state_play_demo= tk.IntVar(value=1)
-        self.check_play_demo = tb.Checkbutton(self.root_frame, text='demo?', 
-                                               bootstyle="default-round-toggle",
-                                               variable=self.check_state_play_demo)
-        
-        self.check_play_demo.grid(row=row, padx=20, pady=400)        
         self.root.mainloop()
 
     def update_app(self):
@@ -184,7 +177,6 @@ class App:
                          first_fret = int(self.input_fret_from.get()),
                          last_fret = int(self.input_fret_to.get()),
                          scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                         play_demo = self.check_state_play_demo.get(),
                          max_bend = self.guitar.STRING_DISTANCE
                          )
 
