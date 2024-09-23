@@ -20,7 +20,7 @@ class Visualizer():
         self.show_piano = show_piano
         self.play_demo = play_demo
         self.MAX_BEND = max_bend
-        self.MAX_PITCH_SHIFT = 2730
+        self.MAX_PITCH_SHIFT = 6000 # 2730
         self.BEND_PER_1_PITCH = self.MAX_BEND / self.MAX_PITCH_SHIFT
         self.intervals = self.settings_client.constants['scale_types'][scale_type]['intervals']
         self.guitar_notes_to_show = {}
@@ -198,7 +198,7 @@ class Visualizer():
             string_y = self.GUITAR_STRING_DICT[string]['y0']
             if bend_val := self.guitar_notes_to_show.get(string,{}).get('bend'):
                 # last string bends in other direction
-                bend_y = (-1 if string==6 else 1) * self.BEND_PER_1_PITCH * bend_val + string_y 
+                bend_y = (1 if string==1 else -1) * self.BEND_PER_1_PITCH * bend_val + string_y 
                 bend_x = self.GUITAR_FRET_DICT[self.guitar_notes_to_show.get(string,{}).get('fret')]['middle_x']
                 pygame.draw.line(screen, self.settings_client.settings['guitar_strings_color'], 
                                 (self.START_STRING_X, string_y),
@@ -225,7 +225,7 @@ class Visualizer():
         interval_y = self.GUITAR_STRING_DICT[string_number]['y0']        
         if self.guitar_notes_to_show.get(string_number,{}).get('bend') and \
             self.guitar_notes_to_show.get(string_number,{}).get('fret') == fret:
-            interval_y += self.BEND_PER_1_PITCH * self.guitar_notes_to_show.get(string_number,{}).get('bend') * (-1 if string_number == 6 else 1)
+            interval_y += self.BEND_PER_1_PITCH * self.guitar_notes_to_show.get(string_number,{}).get('bend') * (1 if string_number == 1 else -1)
             
         pygame.draw.circle(screen, color,
                            (middle_x, interval_y),
@@ -280,7 +280,6 @@ class Visualizer():
                                             self.piano.keys[black_key]['x_pos'],
                                             pressed=True)
             drawn +=1
-        print(f'drawn: {drawn}: {self.piano_keys_to_show}')
 
     def draw_piano_base(self, screen):
         for key, values in self.piano.sorted_keys.items():
@@ -377,65 +376,38 @@ class Visualizer():
                         if in_guitar_range:
                             self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval}
                         self.piano_keys_to_show.add(key_number)
-                        # self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
-                        #                     self.piano.keys[key_number]['x_pos'],
-                        #                     pressed=True)
-                        # self.draw_overlapping_piano_keys(screen, key_number)                            
                     else:
-                        # if in_guitar_range:
-                            # erase_note = (fret_number, interval, string_number)
-                            # to_redraw = self.update_info_on_guitar(erase_note)
-                        # self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
-                        #                     self.piano.keys[key_number]['x_pos'],
-                        #                     pressed=False)
-                        # try-except for time optimization
                         try:
                             del self.guitar_notes_to_show[string_number]
                         except:
                             pass
                         try:
                             self.piano_keys_to_show.remove(key_number)
-                            print(f'Deleting key: {key_number}. Keys: {self.piano_keys_to_show}')
                         except:
                             pass
-                        # self.draw_overlapping_piano_keys(screen, key_number)
-                    # update_screen = True         
                 elif signal.type == 'note_off':
-                    # in_guitar_range = signal.note in self.guitar.MIDI_INFO_DICT[string_number]
-                    # if in_guitar_range:
-                    #     fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
-                    #     interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']                        
-                    #     erase_note = (fret_number, interval, string_number)
-                    #     to_redraw = self.update_info_on_guitar(erase_note)
-                    # self.draw_piano_key(screen, self.piano.keys[key_number]['type'],
-                    #                     self.piano.keys[key_number]['x_pos'],
-                    #                     pressed=False)
-                    # try:
-                    #     self.piano_keys_to_show.remove(key_number)
-                    # except:
-                    #     pass
-                    # self.draw_overlapping_piano_keys(screen, key_number)                        
-                    # update_screen = True
+                    if signal.note not in self.piano.MIDI_INFO_DICT:
+                        continue
+                    key_number = self.piano.MIDI_INFO_DICT[signal.note]
                     try:
                         del self.guitar_notes_to_show[string_number]
                     except:
                         pass
                     try:
                         self.piano_keys_to_show.remove(key_number)
-                        print(f'Deleting key: {key_number}. Keys: {self.piano_keys_to_show}')
                     except:
-                        pass                    
+                        pass
                 elif signal.type == 'pitchwheel':
                     if note := self.guitar_notes_to_show.get(string_number):
                         fret_number = note['fret']
                         interval = note['interval']
-                        # if signal.pitch == 0:
-                        #     self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval}
-                        # else:
-                        self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'bend': signal.pitch}                        
-                        # update_screen = True
-                        # to_redraw = True
-            # if update_screen:
+                        if signal.pitch < 0:
+                            pitch = 0
+                        elif signal.pitch > self.MAX_PITCH_SHIFT:
+                            pitch = self.MAX_PITCH_SHIFT
+                        else:
+                            pitch = signal.pitch
+                        self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'bend': pitch}                        
                 self.update_guitar(screen) #, to_redraw)                
                 self.update_piano(screen)
                 pygame.display.flip()

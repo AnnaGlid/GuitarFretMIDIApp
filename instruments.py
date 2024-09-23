@@ -158,8 +158,7 @@ class Guitar():
             string_num = self.settings_client.constants['guitar_strings'][string]['number']
             self.MIDI_INFO_DICT[string_num] = {}
             midi_val = self.get_midi_value_open_string(string)
-            for fret in range(0, self.settings_client.constants['frets_number']+1):
-                midi_val += 1
+            for fret in range(0, self.settings_client.constants['frets_number']+1):                
                 note = self.settings_client.constants['guitar_strings'][string]['frets'][fret]
                 interval = self.assigned_intervals[str(note)]
                 self.MIDI_INFO_DICT[string_num][midi_val] = {
@@ -169,6 +168,7 @@ class Guitar():
                 if fret in range(int(first_fret), int(last_fret)+1) and \
                         interval in self.settings_client.constants['scale_types'][scale_type]['intervals']:
                     self.draw_interval(string, fret, interval)
+                midi_val += 1
 
     def draw_interval(self, string: str, fret: str, interval: str):
         r = self.settings_client.settings['interval_label_radius']
