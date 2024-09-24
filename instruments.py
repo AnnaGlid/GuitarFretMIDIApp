@@ -1,9 +1,9 @@
-from json import load
 import tkinter as tk
-
+from commons import exception_catcher
 
 class Guitar():
 
+    @exception_catcher
     def __init__(self, root, max_width, settings_client):    
         self.settings_client = settings_client
         self.font = ('Constantia', 10)
@@ -74,6 +74,7 @@ class Guitar():
                 note_idx = note_idx + 1 if  note_idx + 1 < len(self.settings_client.constants['all_notes_grouped']) else 0        
         self.draw_guitar()        
     
+    @exception_catcher
     def draw_guitar(self):
         self.canvas.create_rectangle(0, 0, self.FRETBOARD_LENGTH, self.FRETBOARD_WIDTH,  
                 outline=self.settings_client.settings['guitar_neck_color'], fill=self.settings_client.settings['guitar_neck_color'])
@@ -127,6 +128,7 @@ class Guitar():
                                     fill=self.settings_client.settings['guitar_strings_color'], 
                                     width=int(0.5 + 0.5*string))
         
+    @exception_catcher
     def get_midi_value_open_string(self, string_name: str):
         match string_name:
             case "E":
@@ -143,6 +145,7 @@ class Guitar():
                 midi_val = 64
         return midi_val
 
+    @exception_catcher
     def show_fretboard(self, root_note, scale_type_name, first_fret, last_fret):
         self.canvas.delete('all')
         self.draw_guitar()
@@ -170,6 +173,7 @@ class Guitar():
                     self.draw_interval(string, fret, interval)
                 midi_val += 1
 
+    @exception_catcher
     def draw_interval(self, string: str, fret: str, interval: str):
         r = self.settings_client.settings['interval_label_radius']
         string_number = self.settings_client.constants['guitar_strings'][string]['number']
@@ -193,6 +197,7 @@ class Guitar():
 
 class Piano():
 
+    @exception_catcher
     def __init__(self, root, max_width, settings_client):
         self.settings_client = settings_client
         self.CANVAS_WIDTH = max_width
@@ -252,6 +257,7 @@ class Piano():
             }
         self.draw_piano()
 
+    @exception_catcher
     def draw_key(self, key_type: str, x_pos: float|int):
         if key_type == self.w:
             self.canvas.create_rectangle(x_pos, 0, self.white_key_width + x_pos, self.white_key_length,
@@ -260,7 +266,7 @@ class Piano():
             self.canvas.create_rectangle(x_pos, 0, self.black_key_width + x_pos, self.black_key_length,
                                          outline='black', fill='black')
             
-
+    @exception_catcher
     def draw_piano(self):
         for key, values in self.sorted_keys.items():
             self.draw_key(values['type'], values['x_pos'])

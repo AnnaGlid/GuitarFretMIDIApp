@@ -1,6 +1,6 @@
-import pygame
 import mido
-import time # debug
+import pygame
+from commons import exception_catcher
 
 MARGIN_X = 40
 MARGIN_Y = 80
@@ -9,6 +9,8 @@ class NoInputException(Exception):
     """Raise when cannot open MIDO input"""
 
 class Visualizer():
+
+    @exception_catcher    
     def __init__(self, settings_client, size: tuple, show_guitar: bool, show_piano: bool,
                  guitar, piano, first_fret: int, last_fret: int, scale_type: str, max_bend: float):
         self.settings_client = settings_client
@@ -76,6 +78,24 @@ class Visualizer():
         self.fret_range = range(self.first_fret, self.last_fret+1)
         self.run()
 
+    @exception_catcher
+    def no_midi_input(self, screen, fill_color):
+        font_color = 'black' if not self.settings_client.settings['dark_theme'] else 'white'
+        font = pygame.font.Font(pygame.font.get_default_font(), 30)
+        screen.fill(fill_color)
+        surface = font.render(
+            self.settings_client.strings['no_midi_input'],
+            False, font_color)
+        screen.blit(surface, (screen.get_size()[0] / 4, screen.get_size()[1] //2 ))
+        pygame.display.flip()
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+        pygame.quit()      
+
+    @exception_catcher
     def run(self):
         pygame.init()
         screen = pygame.display.set_mode((self.size[0], self.size[1]))
@@ -96,6 +116,7 @@ class Visualizer():
         else:
             self.show_bored_screen(screen, fill_color)
 
+    @exception_catcher
     def draw_guitar_base(self, screen: pygame.surface):
         pygame.draw.rect(screen, self.settings_client.settings['guitar_neck_color'], 
                          pygame.Rect(MARGIN_X, MARGIN_Y, self.guitar.FRETBOARD_LENGTH, self.guitar.FRETBOARD_WIDTH))
@@ -130,6 +151,7 @@ class Visualizer():
             pygame.draw.circle(screen, self.settings_client.settings['guitar_dots_color'],
                 (middle_point[0], middle_point[1] + self.guitar.DOT_SIZE*5), self.guitar.DOT_SIZE)     
 
+    @exception_catcher
     def draw_guitar_strings(self, screen):
         for string in range(1, self.guitar.STRING_NUMBER+1):
             # string_y = self.guitar.STRING_DICT[string]['coords']['y0'] + MARGIN_Y
@@ -152,10 +174,12 @@ class Visualizer():
                                 (self.END_STRING_X, string_y),
                                 width=self.GUITAR_STRING_WIDTH_DICT[string])
 
+    @exception_catcher
     def show_fretboard(self, screen):
         for fret, interval, string in self.INTERVALS_TO_SHOW:
             self.draw_interval(screen, fret, interval, string)
 
+    @exception_catcher
     def draw_interval(self, screen, fret: int, interval: str, 
                       string_number:int|None=None, is_played: bool=False):
         color = self.settings_client.settings['interval_color'][interval]['bg'] if not is_played else 'red'
@@ -177,6 +201,7 @@ class Visualizer():
             surface_rect.center = (middle_x, interval_y)
             screen.blit(surface, surface_rect)        
 
+    @exception_catcher
     def update_info_on_guitar(self, erase_note: tuple) -> bool:
         ''' Returns info if whole guitar should be re-drawn'''
         # note info: (fret_number, interval, string_number)
@@ -191,6 +216,7 @@ class Visualizer():
             return True
         return False
 
+    @exception_catcher
     def update_guitar(self, screen, redraw: bool=True):
         if redraw:
             self.draw_guitar_base(screen)
@@ -204,6 +230,7 @@ class Visualizer():
             self.draw_interval(screen, fret=note['fret'],
                                 interval=note['interval'], string_number=string_num, is_played=True)                             
 
+    @exception_catcher
     def update_piano(self, screen):
         self.draw_piano_base(screen)
         drawn = 0
@@ -219,10 +246,12 @@ class Visualizer():
                                             pressed=True)
             drawn +=1
 
+    @exception_catcher
     def draw_piano_base(self, screen):
         for key, values in self.piano.sorted_keys.items():
             self.draw_piano_key(screen, values['type'], values['x_pos'])
 
+    @exception_catcher
     def draw_piano_key(self, screen, key_type: str, x_pos: float|int, pressed: bool = False):        
         if key_type == self.piano.w:
             rect = pygame.draw.rect(screen, color='white' if not pressed else 'red',
@@ -237,6 +266,7 @@ class Visualizer():
                             self.piano.black_key_width, self.piano.black_key_length),
                             border_radius=1)            
     
+    @exception_catcher
     def draw_overlapping_piano_keys(self, screen, key_number):
         if self.piano.keys[key_number-1]['type'] == self.piano.b:                            
             self.draw_piano_key(screen, self.piano.b,
@@ -247,6 +277,7 @@ class Visualizer():
                                 self.piano.keys[key_number+1]['x_pos'],
                                 pressed=key_number+1 in self.piano_keys_to_show)
 
+    @exception_catcher
     def show_bored_screen(self, screen, fill_color):
         font_color = 'black' if not self.settings_client.settings['dark_theme'] else 'white'
         font = pygame.font.Font(pygame.font.get_default_font(), 40)
@@ -263,13 +294,15 @@ class Visualizer():
                     running = False
         pygame.quit()      
 
+    @exception_catcher
     def run_both(self, screen, fill_color):
         running = True
         try:
             inport = mido.open_input()
         except OSError:
-            raise NoInputException()
-        screen.fill(fill_color)        
+            self.no_midi_input(screen, fill_color)
+            return
+        screen.fill(fill_color)
         self.draw_guitar_base(screen)
         self.draw_guitar_strings(screen)
         self.show_fretboard(screen)
@@ -334,13 +367,15 @@ class Visualizer():
                 self.update_piano(screen)
                 pygame.display.flip()
         pygame.quit()
-
+    
+    @exception_catcher
     def run_guitar(self, screen, fill_color):
         running = True
         try:
             inport = mido.open_input()
         except OSError:
-            raise NoInputException()
+            self.no_midi_input(screen, fill_color)
+            return
         screen.fill(fill_color)        
         self.draw_guitar_base(screen)
         self.draw_guitar_strings(screen)
@@ -390,12 +425,14 @@ class Visualizer():
                 pygame.display.flip()
         pygame.quit()
 
+    @exception_catcher
     def run_piano(self, screen, fill_color):
         running = True
         try:
             inport = mido.open_input()
         except OSError:
-            raise NoInputException()
+            self.no_midi_input(screen, fill_color)
+            return
         screen.fill(fill_color)        
         self.draw_piano_base(screen)       
         pygame.display.flip()                

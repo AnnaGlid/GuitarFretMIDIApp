@@ -1,13 +1,17 @@
-from json import load, dump, dumps, loads
+from json import load, dump
+from commons import exception_catcher
+
 import tkinter as tk
 import ttkbootstrap as tb
 import ttkbootstrap.constants as tb_const
+from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.dialogs.colorchooser import ColorChooserDialog
-from ttkbootstrap.dialogs import Messagebox
 
 
 class Settings:
+    
+    @exception_catcher    
     def __init__(self, app):
         self.app = app
         self.SETTINGS_PATH = 'config/settings.json'
@@ -19,6 +23,7 @@ class Settings:
         with open('config/constants.json') as f:
             self.constants = load(f)        
 
+    @exception_catcher
     def set_color_interval(self, parameter: str):
         interval, what = parameter.split('//')
         dialog = ColorChooserDialog(parent=self.window)
@@ -29,6 +34,7 @@ class Settings:
         self.interval_widgets_dict[interval][what]['btn'].configure(bg=chosen_color.hex)        
         self.interval_widgets_dict[interval][what]['new_color'] = chosen_color.hex
 
+    @exception_catcher
     def set_color_guitar(self, element: str):
         dialog = ColorChooserDialog(parent=self.window)
         dialog.show()
@@ -38,6 +44,7 @@ class Settings:
         self.guitar_colors[element]['btn'].configure(bg=chosen_color.hex)        
         self.guitar_colors[element]['new_color'] = chosen_color.hex        
 
+    @exception_catcher
     def save_settings(self):
         anything_changed = False
         if self.settings['interval_label_radius'] != self.radius_size.get():
@@ -74,10 +81,12 @@ class Settings:
                 dump(self.settings, f)
             self.app.update_app()
         self.close_window()
-        
+
+    @exception_catcher
     def close_window(self):
         self.window.destroy()
 
+    @exception_catcher
     def revert_to_default(self):
         mb = Messagebox.yesno(self.strings['ask_revert_to_default'], self.strings['revert_to_default'])
         if mb == 'Yes':
@@ -99,6 +108,7 @@ class Settings:
                 self.settings = current_settings_json
                 self.app.update_app()
 
+    @exception_catcher
     def open(self):
         padx = 10
         pady= 5

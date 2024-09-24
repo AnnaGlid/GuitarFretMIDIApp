@@ -45,7 +45,8 @@
         "dark_theme": "Dark theme",
         "interval_font_size": "Interval label font size",
         "start_visuals": "Start visuals",
-        "fret_zero_color": "Fret zero color"
+        "fret_zero_color": "Fret zero color",
+        "no_midi_input": "No MIDI input detected! Use tool for determining MIDI input."
     },
     "pl":{
         "show_guitar": "Pokaż gitarę",
@@ -93,6 +94,7 @@
         "dark_theme": "Ciemny motyw",
         "interval_font_size": "Rozmiar czcionki oznaczeń interwałów",
         "start_visuals": "Wizualizacja",
-        "fret_zero_color": "Kolor zerowego progu"
+        "fret_zero_color": "Kolor zerowego progu",
+        "no_midi_input": "Nie wykryto wejścia MIDI! Skorzystaj z narzędzia do jego wykrywania."
     }    
 }

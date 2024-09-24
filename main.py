@@ -1,16 +1,16 @@
 import tkinter as tk
-from json import load
 import ttkbootstrap as tb
 import ttkbootstrap.constants as tb_const
 from ttkbootstrap.scrolled import ScrolledFrame
 
-
+from commons import exception_catcher
 from settings import Settings
 from playandshow import Visualizer
 from instruments import Guitar, Piano
 
-
 class App:
+
+    @exception_catcher
     def __init__(self):
         row = 0
         self.settings_client = Settings(self)
@@ -76,9 +76,9 @@ class App:
 
         self.check_state_show_piano = tk.IntVar(value=self.settings_client.settings['show_piano_on_start'])
         self.check_show_piano = tb.Checkbutton(self.settings_frame, text=self.settings_client.strings['show_piano'], 
-                                               bootstyle="default-round-toggle",
-                                               variable=self.check_state_show_piano,
-                                               command=self.set_piano_visibility)
+                                            bootstyle="default-round-toggle",
+                                            variable=self.check_state_show_piano,
+                                            command=self.set_piano_visibility)
         self.check_show_guitar.grid(padx=20, pady=10, row=0)
         self.check_show_piano.grid(padx=20, pady=10, row= 1)
 
@@ -102,7 +102,7 @@ class App:
         #region root scale
         self.scale_root_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['scale_root'], bootstyle="default")
         self.input_scale_root = tb.Combobox(self.scale_root_frame, width=7, state='readonly',
-                                             values=self.settings_client.constants['all_notes'])
+                                            values=self.settings_client.constants['all_notes'])
         self.input_scale_root.current(0)
         self.input_scale_root.grid(pady=10, padx=20)
         self.scale_root_frame.grid(row=2, column=2, padx=10, pady=20)
@@ -111,7 +111,7 @@ class App:
         #region scale type
         self.scale_type_frame = tb.Labelframe(self.settings_frame, text=self.settings_client.strings['type'], bootstyle="default")
         self.input_scale_type = tb.Combobox(self.scale_type_frame, width=15, state='readonly',
-                                             values=[self.settings_client.strings[s] for s in self.settings_client.constants['scale_types']])
+                                            values=[self.settings_client.strings[s] for s in self.settings_client.constants['scale_types']])
         self.input_scale_type.current(0)
         self.input_scale_type.grid(pady=10, padx=30)
         self.scale_type_frame.grid(row=2, column=3, padx=20, pady=20)
@@ -128,9 +128,11 @@ class App:
 
         self.settings_frame.grid(row=row, sticky='news', padx=20, pady=10)
         row += 1
-        self.show_guitar_fretboard()        
+        self.show_guitar_fretboard()
+
         self.root.mainloop()
 
+    @exception_catcher
     def update_app(self):
         self.settings_menu.entryconfigure(self.settings_menu.winfo_id(), label=self.settings_client.strings['settings'])
         self.settings_menu.entryconfigure(0, label=self.settings_client.strings['settings'])
@@ -151,33 +153,37 @@ class App:
         self.btn_update.configure(text=self.settings_client.strings['update'])
         self.show_guitar_fretboard()
 
+    @exception_catcher
     def show_guitar_fretboard(self):
         self.guitar.show_fretboard(self.input_scale_root.get(), self.input_scale_type.get(),
                             self.input_fret_from.get(), self.input_fret_to.get())
-        
+
+    @exception_catcher
     def set_guitar_visibility(self):
         if self.check_state_show_guitar.get():
             self.guitar_frame.grid(**self.guitar_frame_grid_params)  
         else:
             self.guitar_frame.grid_forget()  
 
+    @exception_catcher
     def set_piano_visibility(self):
         if self.check_state_show_piano.get():
             self.piano_frame.grid(**self.piano_frame_grid_params)  
         else:
-            self.piano_frame.grid_forget()  
-
+            self.piano_frame.grid_forget()
+    
+    @exception_catcher
     def play(self):
         vis = Visualizer(settings_client=self.settings_client,
-                         size=self.root.maxsize(),
-                         show_guitar=self.check_state_show_guitar.get(),
-                         show_piano=self.check_state_show_piano.get(),
-                         guitar = self.guitar,
-                         piano = self.piano,
-                         first_fret = int(self.input_fret_from.get()),
-                         last_fret = int(self.input_fret_to.get()),
-                         scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                         max_bend = self.guitar.STRING_DISTANCE
-                         )
+                        size=self.root.maxsize(),
+                        show_guitar=self.check_state_show_guitar.get(),
+                        show_piano=self.check_state_show_piano.get(),
+                        guitar = self.guitar,
+                        piano = self.piano,
+                        first_fret = int(self.input_fret_from.get()),
+                        last_fret = int(self.input_fret_to.get()),
+                        scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
+                        max_bend = self.guitar.STRING_DISTANCE
+                        )
 
 app = App()
