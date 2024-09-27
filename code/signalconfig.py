@@ -18,6 +18,7 @@ class SignalConfig:
         pady= 25
         row = 0
         self.window = tk.Toplevel()
+        self.window.resizable(False,False)
         self.window.title(self.settings_client.strings['signal_config'])
         self.window.geometry('1000x600')
         self.window.columnconfigure(0, weight=1)
@@ -25,6 +26,7 @@ class SignalConfig:
 
         self.textbox = tb.Text(self.window, width=110)
         self.textbox.grid(padx=padx, pady=pady, row=row)
+        self.textbox.config(state=tk.DISABLED)
 
         row += 1
         btn = tb.Button(self.window, command=self.check_signal, text=self.settings_client.strings['check_signal'],
@@ -35,6 +37,7 @@ class SignalConfig:
     def check_signal(self):
         try:
             inport = mido.open_input()
+            self.add_log(self.settings_client.strings['yes_signal'])
             for signal in inport.iter_pending():
                 self.add_log(signal)
         except OSError:
@@ -42,10 +45,12 @@ class SignalConfig:
 
     @exception_catcher
     def add_log(self, log: str):
+        self.textbox.config(state=tk.NORMAL)
         if self.log_nbr >= self.LOG_NBR_LIMIT:
             self.log_nbr = 0
             self.textbox.delete("1.0", tk.END)
         self.log_nbr += 1
         self.textbox.insert(tk.END, log + '\n')
+        self.textbox.config(state=tk.DISABLED)
 
         

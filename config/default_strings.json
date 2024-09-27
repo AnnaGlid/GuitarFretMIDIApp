@@ -46,7 +46,12 @@
         "interval_font_size": "Interval label font size",
         "start_visuals": "Start visuals",
         "fret_zero_color": "Fret zero color",
-        "no_midi_input": "No MIDI input detected! Use tool for determining MIDI input."
+        "no_midi_input": "No MIDI input detected! Use tool for determining MIDI input.",
+        "tools": "Tools",
+        "signal_config": "Configure your midi signal",
+        "check_signal": "Check signal",
+        "no_signal": "No signal detected. Change your MIDI pickup configuration and try again.",
+        "yes_signal": "You are successfully connected!"
     },
     "pl":{
         "show_guitar": "Pokaż gitarę",
@@ -95,6 +100,11 @@
         "interval_font_size": "Rozmiar czcionki oznaczeń interwałów",
         "start_visuals": "Wizualizacja",
         "fret_zero_color": "Kolor zerowego progu",
-        "no_midi_input": "Nie wykryto wejścia MIDI! Skorzystaj z narzędzia do jego wykrywania."
+        "no_midi_input": "Nie wykryto wejścia MIDI! Skorzystaj z narzędzia do jego wykrywania.",
+        "tools": "Narzędzia",
+        "signal_config": "Skonfiguruj sygnał MIDI",
+        "check_signal": "Sprawdź sygnał",
+        "no_signal": "Brak sygnału. Zmień konfigurację odbiornika MIDI i spróbuj ponownie.",
+        "yes_signal": "Połączenie zakończone sukcesem!"
     }    
 }
