@@ -7,6 +7,7 @@ from commons import exception_catcher
 from settings import Settings
 from playandshow import Visualizer
 from instruments import Guitar, Piano
+from signalconfig import SignalConfig
 
 class App:
 
@@ -23,10 +24,16 @@ class App:
         self.root.state('zoomed')
         self.settings_client = Settings(self)
         self.menubar = tk.Menu(self.root)
+        self.signal_config = SignalConfig(self.settings_client)
+        # settings
         self.settings_menu = tk.Menu(self.menubar, tearoff=0)
         self.settings_menu.add_command(label=self.settings_client.strings['settings'], command=self.settings_client.open)
         self.settings_menu.add_command(label=self.settings_client.strings['revert_to_default'], command=self.settings_client.revert_to_default)
         self.menubar.add_cascade(label=self.settings_client.strings['settings'], menu=self.settings_menu)
+        # tools
+        self.tools_menu = tk.Menu(self.menubar, tearoff=0)
+        self.tools_menu.add_command(label=self.settings_client.strings['signal_config'], command=self.signal_config.start)
+        self.menubar.add_cascade(label=self.settings_client.strings['tools'], menu=self.tools_menu)
 
         self.root.config(menu=self.menubar)
         self.root_frame = ScrolledFrame(self.root, autohide=True)

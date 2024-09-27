@@ -115,7 +115,7 @@ class Settings:
         window_row = 0
         self.window = tk.Toplevel()
         self.window.title(self.strings['settings'])
-        self.window.geometry('800x800')
+        self.window.geometry('800x1200')
 
         scroll_frame = ScrolledFrame(self.window, autohide=True)
         scroll_frame.pack(fill=tb_const.BOTH, expand=tb_const.YES, padx=10, pady=10)
