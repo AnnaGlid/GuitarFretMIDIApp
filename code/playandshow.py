@@ -12,7 +12,8 @@ class Visualizer():
 
     @exception_catcher    
     def __init__(self, settings_client, size: tuple, show_guitar: bool, show_piano: bool,
-                 guitar, piano, first_fret: int, last_fret: int, scale_type: str, max_bend: float):
+                 guitar, piano, first_fret: int, last_fret: int, scale_type: str, max_bend: float,
+                 reduce_bends: bool):
         self.settings_client = settings_client
         self.size = size
         self.guitar = guitar
@@ -28,6 +29,7 @@ class Visualizer():
         self.BEND_PER_1_PITCH = self.MAX_BEND / self.MAX_PITCH_SHIFT
         self.intervals = self.settings_client.constants['scale_types'][scale_type]['intervals']
         self.guitar_notes_to_show = {}
+        self.recude_bends = reduce_bends
         '''
         {(string number) 1:{
             "fret": 5,
@@ -105,17 +107,7 @@ class Visualizer():
         pygame.display.set_icon(icon)        
         fill_color = 'black' if self.settings_client.settings['dark_theme'] else 'white'
         self.piano_margin_y = 0
-        if self.show_guitar:
-            if self.show_piano:
-                self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH
-                self.run_both(screen, fill_color)                
-            else:
-                self.run_guitar(screen, fill_color)
-        elif self.show_piano:
-            self.piano_margin_y = MARGIN_Y
-            self.run_piano(screen, fill_color)            
-        else:
-            self.show_bored_screen(screen, fill_color)
+        self.run_instruments(screen, fill_color)
 
     @exception_catcher
     def draw_guitar_base(self, screen: pygame.surface):
@@ -296,20 +288,140 @@ class Visualizer():
         pygame.quit()      
 
     @exception_catcher
-    def run_both(self, screen, fill_color):
+    def create_run_function(self, screen, fill_color):
+        def run_instruments():
+            running = True
+            try:
+                inport = mido.open_input()
+            except OSError:
+                self.no_midi_input(screen, fill_color)
+                return
+            screen.fill(fill_color)
+            self.draw_guitar_base(screen)
+            self.draw_guitar_strings(screen)
+            self.show_fretboard(screen)
+            self.draw_piano_base(screen)       
+            pygame.display.flip()
+            prev_signal = mido.Message(type='note_on')
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        inport.close()
+                        break            
+                for signal in inport.iter_pending():
+                    print(signal)                
+                    if signal.channel < 0 or signal.channel > 5:
+                        continue
+                    string_number = signal.channel + 1
+                    if signal.type == 'note_on': 
+                        if signal.note not in self.piano.MIDI_INFO_DICT:
+                            continue                   
+                        key_number = self.piano.MIDI_INFO_DICT[signal.note]
+                        in_guitar_range = signal.note in self.guitar.MIDI_INFO_DICT[string_number]
+                        if in_guitar_range:       
+                            fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
+                            interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']
+                        if signal.velocity > 0:
+                            if in_guitar_range:
+                                self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'note': signal.note}
+                            self.piano_keys_to_show.add(key_number)
+                        else:
+                            try:
+                                if self.guitar_notes_to_show.get(string_number,{}).get('note') == signal.note:
+                                    del self.guitar_notes_to_show[string_number]
+                            except:
+                                pass
+                            try:
+                                self.piano_keys_to_show.remove(key_number)
+                            except:
+                                pass
+                    elif signal.type == 'note_off':
+                        if signal.note not in self.piano.MIDI_INFO_DICT:
+                            continue
+                        key_number = self.piano.MIDI_INFO_DICT[signal.note]
+                        try:
+                            note = self.guitar_notes_to_show.get(string_number,{}).get('note')
+                            if note == signal.note or \
+                                prev_signal.type == 'pitchwheel' and note in range(signal.note-1, signal.note+2) :
+                                del self.guitar_notes_to_show[string_number]
+                        except:
+                            pass
+                        try:
+                            self.piano_keys_to_show.remove(key_number)
+                        except:
+                            pass
+                    elif signal.type == 'pitchwheel':
+                        if note := self.guitar_notes_to_show.get(string_number):
+                            fret_number = note['fret']
+                            interval = note['interval']
+                            d = self.guitar_notes_to_show[string_number]                        
+                            if fret_number > 0 and signal.pitch in self.ONE_STEP_PITCH and \
+                                (prev_signal.type != 'pitchwheel' or prev_signal.type == 'pitchwheel' and prev_signal.pitch == 0):
+                                if signal.pitch == self.ONE_STEP_PITCH[0]:                            
+                                    side = -1 # down
+                                elif signal.pitch == self.ONE_STEP_PITCH[1]:
+                                    side = 1 # up
+                                try:
+                                    self.guitar_notes_to_show[string_number] = {'fret': d['fret']+1*side, 
+                                                                        'interval': self.guitar.MIDI_INFO_DICT[string_number][d['note']+1*side]['interval'], 
+                                                                        'note': d['note']+1*side}
+                                    key_number = self.piano.MIDI_INFO_DICT[d['note']]
+                                    self.piano_keys_to_show.add(key_number + 1*side)
+                                    self.piano_keys_to_show.remove(key_number) if key_number in self.piano_keys_to_show else None
+                                    self.update_guitar(screen)
+                                    self.update_piano(screen)
+                                    pygame.display.flip()
+                                    prev_signal = signal
+                                    continue
+                                except:
+                                    pass    
+                            if signal.pitch < 0:
+                                pitch = 0
+                            elif signal.pitch > self.MAX_PITCH_SHIFT:
+                                pitch = self.MAX_PITCH_SHIFT
+                            else:
+                                pitch = signal.pitch
+                            self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 
+                                                                'bend': pitch, 'note': self.guitar_notes_to_show[string_number].get('note')}
+                    self.update_guitar(screen)
+                    self.update_piano(screen)
+                    pygame.display.flip()
+                    prev_signal = signal
+            pygame.quit()
+
+    @exception_catcher
+    def run_instruments(self, screen, fill_color):
         running = True
-        try:
-            inport = mido.open_input()
-        except OSError:
-            self.no_midi_input(screen, fill_color)
-            return
-        screen.fill(fill_color)
-        self.draw_guitar_base(screen)
-        self.draw_guitar_strings(screen)
-        self.show_fretboard(screen)
-        self.draw_piano_base(screen)       
-        pygame.display.flip()
-        prev_signal = mido.Message(type='note_on')
+        if self.show_guitar and self.show_piano:
+            self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH
+            def update_what_needs_to_be():
+                    self.update_guitar(screen)
+                    self.update_piano(screen)
+        elif self.show_guitar:
+            def update_what_needs_to_be():
+                    self.update_guitar(screen)
+        elif self.show_piano:
+            self.piano_margin_y = MARGIN_Y
+            def update_what_needs_to_be():
+                    self.update_piano(screen)                    
+        else:
+            running = False
+            self.show_bored_screen(screen, fill_color)    
+        
+        if running:
+            try:
+                inport = mido.open_input()
+            except OSError:
+                self.no_midi_input(screen, fill_color)
+                return        
+            screen.fill(fill_color)
+            self.draw_guitar_base(screen)
+            self.draw_guitar_strings(screen)
+            self.show_fretboard(screen)
+            self.draw_piano_base(screen)       
+            pygame.display.flip()
+            prev_signal = mido.Message(type='note_on')
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -324,7 +436,7 @@ class Visualizer():
                 if signal.type == 'note_on': 
                     if signal.note not in self.piano.MIDI_INFO_DICT:
                         continue                   
-                    key_number = self.piano.MIDI_INFO_DICT[signal.note]
+                    piano_key_number = self.piano.MIDI_INFO_DICT[signal.note]
                     in_guitar_range = signal.note in self.guitar.MIDI_INFO_DICT[string_number]
                     if in_guitar_range:       
                         fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
@@ -332,7 +444,7 @@ class Visualizer():
                     if signal.velocity > 0:
                         if in_guitar_range:
                             self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'note': signal.note}
-                        self.piano_keys_to_show.add(key_number)
+                        self.piano_keys_to_show.add(piano_key_number)
                     else:
                         try:
                             if self.guitar_notes_to_show.get(string_number,{}).get('note') == signal.note:
@@ -340,13 +452,13 @@ class Visualizer():
                         except:
                             pass
                         try:
-                            self.piano_keys_to_show.remove(key_number)
+                            self.piano_keys_to_show.remove(piano_key_number)
                         except:
                             pass
                 elif signal.type == 'note_off':
                     if signal.note not in self.piano.MIDI_INFO_DICT:
                         continue
-                    key_number = self.piano.MIDI_INFO_DICT[signal.note]
+                    piano_key_number = self.piano.MIDI_INFO_DICT[signal.note]
                     try:
                         note = self.guitar_notes_to_show.get(string_number,{}).get('note')
                         if note == signal.note or \
@@ -355,7 +467,7 @@ class Visualizer():
                     except:
                         pass
                     try:
-                        self.piano_keys_to_show.remove(key_number)
+                        self.piano_keys_to_show.remove(piano_key_number)
                     except:
                         pass
                 elif signal.type == 'pitchwheel':
@@ -373,9 +485,9 @@ class Visualizer():
                                 self.guitar_notes_to_show[string_number] = {'fret': d['fret']+1*side, 
                                                                     'interval': self.guitar.MIDI_INFO_DICT[string_number][d['note']+1*side]['interval'], 
                                                                     'note': d['note']+1*side}
-                                key_number = self.piano.MIDI_INFO_DICT[d['note']]
-                                self.piano_keys_to_show.add(key_number + 1*side)
-                                self.piano_keys_to_show.remove(key_number) if key_number in self.piano_keys_to_show else None
+                                piano_key_number = self.piano.MIDI_INFO_DICT[d['note']]
+                                self.piano_keys_to_show.add(piano_key_number + 1*side)
+                                self.piano_keys_to_show.remove(piano_key_number) if piano_key_number in self.piano_keys_to_show else None
                                 self.update_guitar(screen)
                                 self.update_piano(screen)
                                 pygame.display.flip()
@@ -391,133 +503,7 @@ class Visualizer():
                             pitch = signal.pitch
                         self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 
                                                             'bend': pitch, 'note': self.guitar_notes_to_show[string_number].get('note')}
-                self.update_guitar(screen)
-                self.update_piano(screen)
+                update_what_needs_to_be()
                 pygame.display.flip()
                 prev_signal = signal
-        pygame.quit()
-    
-    @exception_catcher
-    def run_guitar(self, screen, fill_color):
-        running = True
-        try:
-            inport = mido.open_input()
-        except OSError:
-            self.no_midi_input(screen, fill_color)
-            return
-        screen.fill(fill_color)        
-        self.draw_guitar_base(screen)
-        self.draw_guitar_strings(screen)
-        self.show_fretboard(screen)
-        pygame.display.flip()       
-        prev_signal = mido.Message(type='note_on')         
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    inport.close()
-                    break            
-            for signal in inport.iter_pending():
-                print(signal)                
-                if signal.channel < 0 or signal.channel > 5:
-                    continue
-                string_number = signal.channel + 1
-                if signal.type == 'note_on': 
-                    in_guitar_range = signal.note in self.guitar.MIDI_INFO_DICT[string_number]
-                    if in_guitar_range:       
-                        fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
-                        interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']
-                    if signal.velocity > 0:
-                        if in_guitar_range:
-                            self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'note': signal.note}
-                    else:
-                        try:
-                            if self.guitar_notes_to_show.get(string_number,{}).get('note') == signal.note:
-                                del self.guitar_notes_to_show[string_number]
-                        except:
-                            pass
-                elif signal.type == 'note_off':
-                    try:
-                        note = self.guitar_notes_to_show.get(string_number,{}).get('note')
-                        if note == signal.note or \
-                            prev_signal.type == 'pitchwheel' and note in range(signal.note-1, signal.note+2) :
-                            del self.guitar_notes_to_show[string_number]
-                    except:
-                        pass
-                elif signal.type == 'pitchwheel':
-                    if note := self.guitar_notes_to_show.get(string_number):
-                        fret_number = note['fret']
-                        interval = note['interval']
-                        d = self.guitar_notes_to_show[string_number]
-                        if fret_number > 0 and signal.pitch in self.ONE_STEP_PITCH and \
-                            (prev_signal.type != 'pitchwheel' or prev_signal.type == 'pitchwheel' and prev_signal.pitch == 0):
-                            if signal.pitch == self.ONE_STEP_PITCH[0]:                            
-                                side = -1 # down
-                            elif signal.pitch == self.ONE_STEP_PITCH[1]:
-                                side = 1 # up
-                            try:
-                                self.guitar_notes_to_show[string_number] = {'fret': d['fret']+1*side, 
-                                                                    'interval': self.guitar.MIDI_INFO_DICT[string_number][d['note']+1*side]['interval'], 
-                                                                    'note': d['note']+1*side}
-                                self.update_guitar(screen)
-                                pygame.display.flip()
-                                prev_signal = signal
-                                continue
-                            except:
-                                pass
-                        if signal.pitch < 0:
-                            pitch = 0
-                        elif signal.pitch > self.MAX_PITCH_SHIFT:
-                            pitch = self.MAX_PITCH_SHIFT
-                        else:
-                            pitch = signal.pitch
-                        self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 
-                                                            'bend': pitch, 'note': self.guitar_notes_to_show[string_number].get('note')}
-                self.update_guitar(screen)
-                pygame.display.flip()
-                prev_signal = signal
-        pygame.quit()
-
-    @exception_catcher
-    def run_piano(self, screen, fill_color):
-        running = True
-        try:
-            inport = mido.open_input()
-        except OSError:
-            self.no_midi_input(screen, fill_color)
-            return
-        screen.fill(fill_color)        
-        self.draw_piano_base(screen)       
-        pygame.display.flip()                
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    inport.close()
-                    break            
-            for signal in inport.iter_pending():
-                print(signal)                
-                if signal.channel < 0 or signal.channel > 5:
-                    continue
-                if signal.type == 'note_on': 
-                    if signal.note not in self.piano.MIDI_INFO_DICT:
-                        continue                   
-                    key_number = self.piano.MIDI_INFO_DICT[signal.note]
-                    if signal.velocity > 0:
-                        self.piano_keys_to_show.add(key_number)
-                    else:
-                        try:
-                            self.piano_keys_to_show.remove(key_number)
-                        except:
-                            pass
-                elif signal.type == 'note_off':
-                    if signal.note not in self.piano.MIDI_INFO_DICT:
-                        continue
-                    key_number = self.piano.MIDI_INFO_DICT[signal.note]
-                    try:
-                        self.piano_keys_to_show.remove(key_number)
-                    except:
-                        pass
-                self.update_piano(screen)
-                pygame.display.flip()
         pygame.quit()

@@ -51,7 +51,9 @@
         "signal_config": "Configure your midi signal",
         "check_signal": "Check signal",
         "no_signal": "No signal detected. Change your MIDI pickup configuration and try again.",
-        "yes_signal": "You are successfully connected!"
+        "yes_signal": "You are successfully connected!",
+        "reduce_bends": "Reduce bends (pitchwheel signal)",
+        "reduce_bends_info": "Check this button if your pull-offs or \nhammer-ons are creating invalid pitchwheel signal"
     },
     "pl":{
         "show_guitar": "Pokaż gitarę",
@@ -105,6 +107,8 @@
         "signal_config": "Skonfiguruj sygnał MIDI",
         "check_signal": "Sprawdź sygnał",
         "no_signal": "Brak sygnału. Zmień konfigurację odbiornika MIDI i spróbuj ponownie.",
-        "yes_signal": "Połączenie zakończone sukcesem!"
+        "yes_signal": "Połączenie zakończone sukcesem!",
+        "reduce_bends": "Zredukuj efekt bends (sygnał pitchweel)",
+        "reduce_bends_info": "Zaznacz jeśli granie pull-off lub \nhammer-on wysyła błędne sygnały pitchweel"
     }    
 }

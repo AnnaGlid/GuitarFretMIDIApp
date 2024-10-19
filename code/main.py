@@ -141,11 +141,11 @@ class App:
 
     @exception_catcher
     def update_app(self):
-        self.settings_menu.entryconfigure(self.settings_menu.winfo_id(), label=self.settings_client.strings['settings'])
+        self.menubar.entryconfigure(0, label=self.settings_client.strings['settings'])
+        self.menubar.entryconfigure(1, label=self.settings_client.strings['tools'])
         self.settings_menu.entryconfigure(0, label=self.settings_client.strings['settings'])
         self.settings_menu.entryconfigure(1, label=self.settings_client.strings['revert_to_default'])
-        self.menubar.entryconfigure(self.menubar.winfo_id(), label=self.settings_client.strings['settings'])
-        self.settings_frame.configure(text=self.settings_client.strings['settings'])
+        self.tools_menu.entryconfig(0, label=self.settings_client.strings['signal_config'])
         self.check_show_guitar.configure(text=self.settings_client.strings['show_guitar'])    
         self.check_show_piano.configure(text=self.settings_client.strings['show_piano'])
         self.fret_range_frame.configure(text=self.settings_client.strings['fret_range'])
@@ -190,7 +190,8 @@ class App:
                         first_fret = int(self.input_fret_from.get()),
                         last_fret = int(self.input_fret_to.get()),
                         scale_type = next(filter(lambda x: self.settings_client.strings[x]==self.input_scale_type.get(), self.settings_client.strings)),
-                        max_bend = self.guitar.STRING_DISTANCE
+                        max_bend = self.guitar.STRING_DISTANCE,
+                        reduce_bends = self.settings_client.settings['reduce_bends']
                         )
 
 app = App()
