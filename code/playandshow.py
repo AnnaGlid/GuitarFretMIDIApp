@@ -327,7 +327,7 @@ class Visualizer():
                     inport.close()
                     break            
             for signal in inport.iter_pending():
-                print(signal)                
+                print(signal)
                 if signal.channel < 0 or signal.channel > 5:
                     continue
                 string_number = signal.channel + 1
@@ -354,33 +354,39 @@ class Visualizer():
                         except:
                             pass
                 elif signal.type == 'note_off':
-                    if signal.note not in self.piano.MIDI_INFO_DICT:
-                        continue
-                    piano_key_number = self.piano.MIDI_INFO_DICT[signal.note]
-                    try:
-                        note = self.guitar_notes_to_show.get(string_number,{}).get('note')
-                        if note == signal.note or \
-                                prev_signal.type == 'pitchwheel' and \
-                                note in range(signal.note-1, signal.note+2) :
-                            del self.guitar_notes_to_show[string_number]
-                    except:
-                        pass
-                    try:
-                        self.piano_keys_to_show.remove(piano_key_number)
-                    except:
-                        pass
+                    piano_key_number = self.piano.MIDI_INFO_DICT.get(signal.note)
+                    note = self.guitar_notes_to_show.get(string_number,{}).get('note')
+                    if note == signal.note or \
+                            prev_signal.type == 'pitchwheel' and \
+                            note in range(signal.note-1, signal.note+2):
+                        try: del self.guitar_notes_to_show[string_number] 
+                        except Exception as ex: print(ex)
+                        try: self.piano_keys_to_show.remove(self.piano.MIDI_INFO_DICT.get(note))
+                        except Exception as ez: print(ez)
+
+                    try: self.piano_keys_to_show.remove(piano_key_number)
+                    except: pass
                 elif signal.type == 'pitchwheel':
-                    continue #debug
                     if note := self.guitar_notes_to_show.get(string_number):
                         fret_number = note['fret']
                         interval = note['interval']
-                        d = self.guitar_notes_to_show[string_number]                        
+                        d = self.guitar_notes_to_show[string_number]   
+                        hammer_on = False           
+                        if signal.pitch == 0 and prev_signal.type == 'pitchwheel' and prev_signal.pitch in self.ONE_STEP_PITCH:
+                            hammer_on = True
+                            if prev_signal.pitch == self.ONE_STEP_PITCH[0]:                            
+                                side = 1 # up
+                            elif prev_signal.pitch == self.ONE_STEP_PITCH[1]:
+                                side = -1 # down                            
+
                         if fret_number > 0 and signal.pitch in self.ONE_STEP_PITCH and \
                             (prev_signal.type != 'pitchwheel' or prev_signal.type == 'pitchwheel' and prev_signal.pitch == 0):
+                            hammer_on = True
                             if signal.pitch == self.ONE_STEP_PITCH[0]:                            
                                 side = -1 # down
                             elif signal.pitch == self.ONE_STEP_PITCH[1]:
                                 side = 1 # up
+                        if hammer_on:
                             try:
                                 self.guitar_notes_to_show[string_number] = {'fret': d['fret']+1*side, 
                                                                     'interval': self.guitar.MIDI_INFO_DICT[string_number][d['note']+1*side]['interval'], 
@@ -403,6 +409,8 @@ class Visualizer():
                             pitch = signal.pitch
                         self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 
                                                             'bend': pitch, 'note': self.guitar_notes_to_show[string_number].get('note')}
+                if not self.guitar_notes_to_show and self.piano_keys_to_show:                    
+                    self.piano_keys_to_show.clear()
                 update_what_needs_to_be()
                 pygame.display.flip()
                 prev_signal = signal
