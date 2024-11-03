@@ -40,12 +40,10 @@ class SignalConfig:
 
     @exception_catcher
     def check_signal(self):
-        # any_signal = False
         self.running = True
         timeout = datetime.now() + timedelta(seconds=self.TIMEOUT)
         try:
             with mido.open_input() as inport:
-                self.add_log(self.settings_client.strings['yes_signal'])
                 while self.running:
                     if timeout < datetime.now():
                         self.running = False
