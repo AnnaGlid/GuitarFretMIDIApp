@@ -357,20 +357,20 @@ class Visualizer():
                     if signal.note not in self.piano.MIDI_INFO_DICT:
                         continue
                     piano_key_number = self.piano.MIDI_INFO_DICT[signal.note]
-                    if self.recude_bends:
-                        try:
-                            note = self.guitar_notes_to_show.get(string_number,{}).get('note')
-                            if note == signal.note or \
-                                    prev_signal.type == 'pitchwheel' and \
-                                    note in range(signal.note-1, signal.note+2) :
-                                del self.guitar_notes_to_show[string_number]
-                        except:
-                            pass
+                    try:
+                        note = self.guitar_notes_to_show.get(string_number,{}).get('note')
+                        if note == signal.note or \
+                                prev_signal.type == 'pitchwheel' and \
+                                note in range(signal.note-1, signal.note+2) :
+                            del self.guitar_notes_to_show[string_number]
+                    except:
+                        pass
                     try:
                         self.piano_keys_to_show.remove(piano_key_number)
                     except:
                         pass
                 elif signal.type == 'pitchwheel':
+                    continue #debug
                     if note := self.guitar_notes_to_show.get(string_number):
                         fret_number = note['fret']
                         interval = note['interval']
