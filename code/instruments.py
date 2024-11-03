@@ -88,7 +88,8 @@ class Guitar():
                 self.canvas.create_text(
                     self.FRET_DICT[fret-1]['coords']['x0'] + (self.FRET_DICT[fret]['coords']['x0'] - self.FRET_DICT[fret-1]['coords']['x0'])/2,
                     float(self.FRETBOARD_WIDTH + self.TEXT_MARGIN/2),
-                    text = str(fret)
+                    text = str(fret),
+                    fill='grey'
                 )
 
         for fret in range(1, self.FRETS_NUMBER+1):

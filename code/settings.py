@@ -56,9 +56,9 @@ class Settings:
         if self.settings['show_piano_on_start'] != self.check_state_show_piano.get():
             anything_changed = True
             self.settings['show_piano_on_start'] = self.check_state_show_piano.get()
-        if self.settings['reduce_bends'] != self.check_state_reduce_bends.get():
-            anything_changed = True
-            self.settings['reduce_bends'] = self.check_state_reduce_bends.get()            
+        # if self.settings['reduce_bends'] != self.check_state_reduce_bends.get():
+        #     anything_changed = True
+        #     self.settings['reduce_bends'] = self.check_state_reduce_bends.get()            
 
         for interval in self.settings['interval_color']:
             if new_color := self.interval_widgets_dict[interval]['bg'].get('new_color'):
@@ -160,15 +160,7 @@ class Settings:
                                 variable=self.check_state_show_piano, text=self.strings['show_piano_on_start'])
         show_piano_checkbtn.grid(padx=padx*2, pady=pady*2)
         show_on_start_frame.grid(padx=padx, pady=pady, row=window_row)
-        window_row += 1        
-
-        reduce_bends_frame = tb.Labelframe(scroll_frame, text=self.strings['reduce_bends'])
-        self.check_state_reduce_bends = tk.IntVar(value=self.settings['reduce_bends'])
-        reduce_bends_btn = tb.Checkbutton(reduce_bends_frame, bootstyle="round-toggle", 
-                                variable=self.check_state_reduce_bends, text=self.strings['reduce_bends_info'])
-        reduce_bends_btn.grid(padx=padx*2, pady=pady*2)
-        reduce_bends_frame.grid(padx=padx, pady=pady, row=window_row)
-        window_row += 1        
+        window_row += 1         
 
         #region intervals
         intervals_frame = tb.Labelframe(scroll_frame, text=self.strings['interval_color'])

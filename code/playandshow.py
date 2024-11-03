@@ -125,7 +125,7 @@ class Visualizer():
                              width=3)
             
         for fret in self.settings_client.constants['frets_labeled']:
-            surface = self.fret_font.render(str(fret), False, (0, 0, 0))
+            surface = self.fret_font.render(str(fret), False, (144, 144, 144))
             screen.blit(surface, (
                     self.GUITAR_FRET_DICT[fret]['middle_x'],
                     MARGIN_Y + self.LABELED_FRET_TEXT_Y
@@ -194,30 +194,11 @@ class Visualizer():
             surface_rect.center = (middle_x, interval_y)
             screen.blit(surface, surface_rect)        
 
-    # @exception_catcher
-    # def update_info_on_guitar(self, erase_note: tuple) -> bool:
-    #     ''' Returns info if whole guitar should be re-drawn'''
-    #     # note info: (fret_number, interval, string_number)
-    #     try:
-    #         del self.guitar_notes_to_show[erase_note[2]]     
-    #     except:
-    #         pass # well, it happend, just let it go. It was never that serious. - time optimalization
-    #     if erase_note[1] in self.intervals and erase_note[0] in self.fret_range:
-    #         # you can just draw default circle on it
-    #         self.guitar_intervals_to_cover_up.append(erase_note)
-    #     else:
-    #         return True
-    #     return False
-
     @exception_catcher
     def update_guitar(self, screen):
         self.draw_guitar_base(screen)
         self.draw_guitar_strings(screen)
         self.show_fretboard(screen)        
-        # else:
-        #     for note in self.guitar_intervals_to_cover_up:
-        #         self.draw_interval(screen, fret=note[0],
-        #                             interval=note[1], string_number=note[2], is_played=False)   
         for string_num, note in self.guitar_notes_to_show.items():
             self.draw_interval(screen, fret=note['fret'],
                                 interval=note['interval'], string_number=string_num, is_played=True)                             
@@ -291,17 +272,20 @@ class Visualizer():
         #region prepare 
         running = True
         if self.show_guitar and self.show_piano:
-            self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH
-            def update_what_needs_to_be():
-                    self.update_guitar(screen)
-                    self.update_piano(screen)
+            self.piano_margin_y = MARGIN_Y*2 + self.guitar.FRETBOARD_WIDTH            
+            def x():
+                self.update_guitar(screen)
+                self.update_piano(screen)
+            update_what_needs_to_be = x
         elif self.show_guitar:
-            def update_what_needs_to_be():
-                    self.update_guitar(screen)
+            def x():
+                self.update_guitar(screen)
+            update_what_needs_to_be = x
         elif self.show_piano:
             self.piano_margin_y = MARGIN_Y
-            def update_what_needs_to_be():
-                    self.update_piano(screen)                    
+            def x():
+                self.update_piano(screen)
+            update_what_needs_to_be = x
         else:
             running = False
             self.show_bored_screen(screen, fill_color)            
@@ -312,10 +296,7 @@ class Visualizer():
                 self.no_midi_input(screen, fill_color)
                 return        
             screen.fill(fill_color)
-            self.draw_guitar_base(screen)
-            self.draw_guitar_strings(screen)
-            self.show_fretboard(screen)
-            self.draw_piano_base(screen)       
+            update_what_needs_to_be()
             pygame.display.flip()
             prev_signal = mido.Message(type='note_on')
         #endregion            
@@ -325,7 +306,7 @@ class Visualizer():
                 if event.type == pygame.QUIT:
                     running = False
                     inport.close()
-                    break            
+                    break
             for signal in inport.iter_pending():
                 print(signal)
                 if signal.channel < 0 or signal.channel > 5:
@@ -340,6 +321,9 @@ class Visualizer():
                         fret_number = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['fret_number']
                         interval = self.guitar.MIDI_INFO_DICT[string_number][signal.note]['interval']
                     if signal.velocity > 0:
+                        if note := self.guitar_notes_to_show.get(string_number):
+                            try: self.piano_keys_to_show.remove(self.piano.MIDI_INFO_DICT[note.get('note')])
+                            except: pass
                         if in_guitar_range:
                             self.guitar_notes_to_show[string_number] = {'fret': fret_number, 'interval': interval, 'note': signal.note}
                         self.piano_keys_to_show.add(piano_key_number)
@@ -349,24 +333,25 @@ class Visualizer():
                                 del self.guitar_notes_to_show[string_number]
                         except:
                             pass
-                        try:
-                            self.piano_keys_to_show.remove(piano_key_number)
-                        except:
-                            pass
+                        try: self.piano_keys_to_show.remove(piano_key_number)
+                        except: pass
                 elif signal.type == 'note_off':
+                    print(f'[NOTE OFF]: {signal}\t\tcurrent:{self.guitar_notes_to_show.get(string_number)}')
                     piano_key_number = self.piano.MIDI_INFO_DICT.get(signal.note)
                     note = self.guitar_notes_to_show.get(string_number,{}).get('note')
                     if note == signal.note or \
-                            prev_signal.type == 'pitchwheel' and \
-                            note in range(signal.note-1, signal.note+2):
+                        note in range(signal.note-1, signal.note+2):
+                            # prev_signal.type == 'pitchwheel' and \
                         try: del self.guitar_notes_to_show[string_number] 
-                        except Exception as ex: print(ex)
+                        except: pass
                         try: self.piano_keys_to_show.remove(self.piano.MIDI_INFO_DICT.get(note))
-                        except Exception as ez: print(ez)
+                        except: pass
+                    else:
+                        print(f'[NOTE OFF WTF] {signal}\t\t{note}')
 
                     try: self.piano_keys_to_show.remove(piano_key_number)
                     except: pass
-                elif signal.type == 'pitchwheel':
+                elif signal.type == 'pitchwheel':                    
                     if note := self.guitar_notes_to_show.get(string_number):
                         fret_number = note['fret']
                         interval = note['interval']
@@ -394,8 +379,7 @@ class Visualizer():
                                 piano_key_number = self.piano.MIDI_INFO_DICT[d['note']]
                                 self.piano_keys_to_show.add(piano_key_number + 1*side)
                                 self.piano_keys_to_show.remove(piano_key_number) if piano_key_number in self.piano_keys_to_show else None
-                                self.update_guitar(screen)
-                                self.update_piano(screen)
+                                update_what_needs_to_be()
                                 pygame.display.flip()
                                 prev_signal = signal
                                 continue
